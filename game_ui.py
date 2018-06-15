@@ -241,7 +241,7 @@ class Inventory:
 		#b = ["helmet", "armor", "boots", "ring", "weapon", "trinket"]
 		b = [None, "armor", None, None, "weapon", None]
 		for i in range(2):  # 2x3 item slots
-			for x1 in range(3):
+			for x1 in range(3): 
 				n = x1 + (i * 3)
 				#x = X1 + 18 + (i * 199)
 				x = X1-5 + 18 + (i * (199+10))
@@ -548,8 +548,7 @@ class Inventory:
 				self.mtxt(xn+5, yn+102, sn, mtag, anchor="sw")
 				self.mtxt(xn+48, yn+102, sv, mtag, anchor="se")
 				self.mtxt(xn+95, yn+102, "Scnr:", mtag, anchor="se")
-				self.mtxt(xn+145, yn+102, item_p, mtag, anchor="se")	
-				
+				self.mtxt(xn+145, yn+102, item_p, mtag, anchor="se")					
 	
 	
 	def m(self, tag):
@@ -591,7 +590,642 @@ class Inventory:
 		self.cn.create_text(x, y, text=txt, tags=tags, font=font,
 			anchor=anchor, fill=fill, width=width, justify=align)
 			
+
+class Perks:
+	def __init__(self, world, party1data, extract_func, pf1=None, *arg, **kwarg):
+		# data from world
+		self.world = world  # world instance
+		self.parent = world.parent
+		self.cn = world.cn  # world canvas
+		self.items = world.items  # world item data
+		self.perksl = copy.deepcopy(world.perks)  # list of perks
+		self.rsc = self.world.rsc  # world Gif image list
+		self.p1data = copy.deepcopy(party1data)  # world party1 data
+		self.playerdata = copy.deepcopy(world.perks)
+		self.pl = copy.deepcopy(party1data)
+		self.extract = extract_func  # utility func
+		self.pf1 = pf1
+		# start building the ui
+		self.set_variables()
+		self.set_ui()  # create basic ui
+		self.update_ui()
+		# should copy only, save only to real data after save btn
+	
+	
+	def set_variables(self, *args):
+		# init stats and other variables
+		self.wtag = self.world.mtag  # main tag of world
+		self.mtag = "caUI_Perks"  # main tag of this ui
+		self.gtag = "caUI"  # group tag of this ui
+		# for hover stats
+		self.hover_cooldown = False
+		self.go = None
+		self.go1 = None
+		self.go2 = None
+		self.glowing = None
+		# fonts
+		self.f1, self.fsz1 = "Book Antiqua", 12
+		self.f2, self.fsz2 = "Segoe UI", 11
+		self.f3, self.fsz3 = "Book Antiqua", 17
+		self.font1 = ("Book Antiqua", 12)  # general
+		self.font1b = ("Book Antiqua", 12, "bold")
+		self.font2 = ("Segoe UI", 11)  # stats
+		self.font2b = ("Segoe UI", 11, "bold")
+		self.font3 = ("Book Antiqua", 17)  # buttons
+		self.c = "#671111"  # perk line border color
+		#self.c = "#675511"  # perk line border color
+		#self.c1 = "#a5951f"
+		self.c1 = "black"
+		
+
+	def save_perks(self, *args):
+		if self.pf1 is not None:
+			self.pf1()
+			self.cn.tag_lower(self.m("btn_Save Perks"))
+			self.cn.tag_lower(self.m("btn_Cancel"))
+			self.update_ui()
+	
+
+	def count_perkpoints(self, *args):
+		self.perkpoints = self.p1data["stats"][5] // 1000
+		self.perkcount = 0
+		for i in self.p1data["perks"]:
+			self.perkcount += i[1]
+		self.perks_available = self.perkpoints - self.perkcount
+		txt = "{} Perks(s) Available".format(self.perks_available)
+		self.cn.itemconfigure(self.m("p1_perks"), text=txt)
+	
+		
+	def update_ui(self, *args):
+		def m(tags):
+			return self.m(tags)
+		p1 = self.p1data
+		self.cn.itemconfigure(m("p1_name"), text=p1["name"])
+		self.cn.itemconfigure(m("p1_ava"), image=self.rsc[p1["avatar"]])
+		self.set_playerstats()
+		self.cn.delete(self.m("ptree"))
+		self.create_perktree()
+		self.count_perkpoints()
+		self.cn.tag_raise(self.m("hover_stats"))
+		#self.cn.delete(self.m("hover_stats"))
+	
+	
+	def addcheck_perk(self, perk, stage=0, *args):
+		if stage == 0 and self.perks_available > 0:
+			if self.go2 is not None:
+				self.parent.after_cancel(self.go2)
+				self.go2 = None
+			self.cn.tag_raise(self.m("btn_Save Perks"))
+			self.cn.tag_raise(self.m("btn_Cancel"))
+			self.go2 = self.parent.after(100, lambda: self.addcheck_perk(perk, stage=1))
+		elif stage == 1:
+			p = self.perksl[perk]
+			tag = self.m("perk_{}".format(perk))
+			s = "unlocked"
+			if p["prerequisite"] != None:
+				a = p["prerequisite"]
+				if self.perksl[a[0]]["level"][0] < a[1]:
+					s = "locked"
+			if s == "unlocked":
+				n = p["level"][0] + 1
+				if n <= p["level"][1]:
+					p["level"][0] += 1
+					self.add_perk(perk)
+			self.update_ui()
+	
+	
+	def unequip_item(self, iindex, *args):
+		player = self.p1data
+		iteml = self.items
+		if iteml[player["equipped"][iindex]]["type"] == "armor":
+			player["stats"][3] -= iteml[player["equipped"][iindex]]["defense_value"]
+			player["inventory"].append(player["equipped"][iindex])
+			player["equipped"][iindex] = None
+		elif iteml[player["equipped"][iindex]]["type"] == "weapon":
+			wt = iteml[player["equipped"][iindex]]["weapon_type"]
+			for i in range(5):  # HC% IA% CC% CD%
+					player["stats"][i+6] -= player["mods"][wt][i]
+			atk = iteml[player["equipped"][iindex]]["attack_value"]
+			player["stats"][4] -= atk + (atk * player["mods"][wt][4]/100.0)
+			player["inventory"].append(player["equipped"][iindex])
+			player["equipped"][iindex] = None
+		
+	
+	def equip_item(self, item, *args):
+		# THE_PLAYER -> sword0, equip_item("sword0")
+		'''
+		by column
+		Helmet, Ring
+		Armor, Weapon
+		Boots, Trinket
+		'''
+		player = self.p1data
+		iteml = self.items
+		if iteml[item]["type"] == "armor":
+			if player["equipped"][1] is not None:
+				self.unequip_item(1)
+			player["stats"][3] += iteml[item]["defense_value"]
+			player["equipped"][1] = item
+			del player["inventory"][player["inventory"].index(item)]
+		elif iteml[item]["type"] == "weapon":
+			if player["equipped"][4] is not None:
+				self.unequip_item(4)
+			wt = iteml[item]["weapon_type"] 
+			for i in range(5):  # HC% IA% CC% CD%
+				player["stats"][i+6] += player["mods"][wt][i]
+			atk = iteml[item]["attack_value"]
+			atk1 = atk + (atk * player["mods"][wt][4]/100.0)
+			#atk1 = round(atk1, 1)
+			player["stats"][4] += atk1
+			player["equipped"][4] = item 
+			del player["inventory"][player["inventory"].index(item)]
+		elif iteml[item]["type"] == "potion":
+			php = player["stats"][0][0]
+			m = player["stats"][0][1]
+			if php < m:
+				n = iteml[item]["heal_value"] + php
+				n = n if n <= m else m
+				player["stats"][0][0] = n
+				del player["inventory"][player["inventory"].index(item)]
+	
+	
+	def change_weaponstats(self, wchange, change_num, *arg):
+		player = self.p1data
+		iteml = self.items
+		slots = []
+		for i in range(6):
+			if player["equipped"][i] != None:
+				slots.append(player["equipped"][i])
+				self.unequip_item(i)
+		# change weapon stats
+		z = ["HC", "IA", "CC", "Cd", "DB"]
+		if wchange[:5] == "sword":
+			i = z.index(wchange[5:])
+			player["mods"]["sword"][i] += change_num
+		elif wchange[:3] == "axe":
+			i = z.index(wchange[3:])
+			player["mods"]["axe"][i] += change_num
+		elif wchange[:4] == "mace":
+			i = z.index(wchange[4:])
+			player["mods"]["mace"][i] += change_num
+		for i in slots:
+			self.equip_item(i)
+	
+
+	def add_perk(self, perk, mode="normal", *args):
+		person = self.p1data
+		stats = person["stats"]  # HP AP Dodge% Def Atk Exp
+		perk_info = self.perksl[perk]
+		sym = ["HP", "AP", "Dodge%", "Def", "Atk"]
+		n = 1 if mode == "normal" else -1  # reverse
+		for i in range(len(perk_info["affects"])):
+			try:
+				stat = sym.index(perk_info["affects"][i])  # index
+			except:
+				stat = 42  # unused/stopper
+			change_type = perk_info["change"][i][-3:]  # (%) or raw
+			change_num = float(perk_info["change"][i][:-3])
+			if change_type == "(%)":
+				change_num /= 100
+				if stat == 0:  # HP [12/12]
+					if n == -1:
+						stats[stat][0] /= (change_num + 1)
+						stats[stat][1] /= (change_num + 1)
+					else:
+						stats[stat][0] += (stats[stat][0] * change_num * n)
+						stats[stat][1] += (stats[stat][1] * change_num * n)
+					# limit decimals
+					#stats[stat][0] = float("{0:.1f}".format(stats[stat][0]))
+					#stats[stat][1] = float("{0:.1f}".format(stats[stat][1]))
+				elif stats == 42:
+					pass
+				else:
+					if n == -1:
+						stats[stat] /= (change_num + 1)
+					else:
+						stats[stat] += (stats[stat] * change_num * n)
+					#stats[stat] = float("{0:.1f}".format(stats[stat]))
+			elif change_type == "raw":
+				try:
+					statz = stats[stat]
+				except:
+					statz = 42  # unused/stopper
+				if stat == 0:  # HP [12/12]
+					statz[0] += change_num * n
+					statz[1] += change_num * n
+					statz[0] = 0.1 if statz[0] < 0 else statz[0]
+					statz[1] = 0.1 if statz[1] < 0 else statz[1]
+				elif statz == 42:
+					w = perk_info["affects"][i][:5]
+					wchange = perk_info["affects"][i]
+					if w == "sword":
+						self.change_weaponstats(wchange, change_num)
+				else:
+					#statz += change_num * n  # doesn't work
+					stats[stat] += change_num * n
+					#stats[stat] = float("{0:.1f}".format(stats[stat]))
+			else:
+				pass
+				##print "'{}' unknown".format(change_type)
+		if n == - 1:
+			#del person["perks"][person["perks"].index(perk)]
+			pass
+		else:
+			perk_exists, pindex = False, 0
+			for i in range(len(person["perks"])):
+				if person["perks"][i][0] == perk:
+					perk_exists = True
+					pindex = i
+					break
+			if perk_exists:
+				person["perks"][pindex][1] += 1
+			else:
+				person["perks"].append([perk, 1])
+	
+	
+	def square_it(self, perk, *args):
+		coords = self.cn.coords(self.m("perk_{}".format(perk)))
+		x, y = coords[0], coords[1]
+		c = self.c
+		#c = "brown"
+		tag = ("sqrlock_{}".format(perk), "ptree", "pi")  # "perk_{}".format(perk),
+		self.mrect(x, y, 40, 3, fill=c, tags=tag)
+		self.mrect(x, y, 3, 40, fill=c, tags=tag)
+		self.mrect(x + 37, y, 3, 40, fill=c, tags=tag)
+		self.mrect(x, y + 37, 40, 3, fill=c, tags=tag)
+		self.mrect(x + 40, y + 1, 7, 38, fill=self.c, tags=tag)
+	
+
+	def line_it_n(self, preperk0, x0, y0, perk1, x1, y1, *args):
+		perk0 = preperk0[0]
+		diff = self.perksl[perk0]["level"][0] / float(preperk0[1])  # % in decimals
+		distance = y1 - y0
+		tag = "perk_{}2perk_{}".format(perk0, perk1)
+		#c = "#672211"
+		#c1 = "#421111"
+		c, c1 = self.c, self.c1
+		self.mrect(x0-2, y0, 3, distance, fill=c, tags=(tag, "ptree"))
+		if diff >= 1:
+			self.cn.itemconfigure(self.m(tag), fill=c1)
+		elif diff > 0:
+			n = distance * diff
+			n = n if n <= distance else distance
+			self.mrect(x0-2, y0, 3, n, fill=c1, 
+				tags=(tag, "ptree"))
+	
+	
+	def line_it_nw(self, preperk0, x0, y0, perk1, x1, y1, *args):
+		# FIX FUNCTIONS, COMMENT, REFACTOR, SEPARATE
+		perk0 = preperk0[0]
+		diff = self.perksl[perk0]["level"][0] / float(preperk0[1])  # % in decimals
+		distance = y1 - y0
+		tag = "perk_{}2perk_{}".format(perk0, perk1)
+		#c = "#672211"
+		#c1 = "#421111"
+		c, c1 = self.c, self.c1
+		l = x1 - x0
+		sl = distance / 2.0
+		# create border lines
+		self.mrect(x0 - 2, y0, 3, sl, fill=c,
+			tags=(tag, "ptree", "{}s1".format(tag)))
+		self.mrect(x0 - 2, y0 + sl, l, 3, fill=c, 
+			tags=(tag, "ptree", "{}s2".format(tag)))
+		self.mrect(x1 - 2, y1, 3, -sl, fill=c,
+			tags=(tag, "ptree", "{}s3".format(tag)))
+		# create progress lines
+		lsize = l + distance  # length of border line
+		lunits = lsize * diff  # length of line
+		llist = [
+			((x0-2), y0, (distance / 2.0)), 
+			((x0-2), (y0 + sl), ((distance / 2.0) + l)), 
+			((x1-2), (y0 + sl), (distance + l))
+		]
+		for i in range(3):
+			if lunits >= llist[i][2]:
+				self.cn.itemconfigure(self.m("{}s{}".format(tag, i + 1)),
+					fill=c1)
+			elif lunits != 0:
+				if i != 1:
+					w, h = 3, sl
+					z = 0 if i == 0 else llist[i-1][2]
+					nunits = lunits - z
+					#h = sl * (nunits / sl)
+					h = nunits
+				else:
+					w, h = l, 3
+					nunits = lunits - llist[i-1][2]
+					#w = l * (nunits / l)
+					w = nunits
+				self.mrect(llist[i][0], llist[i][1], w, h, fill=c1,
+					tags=(tag, "ptree", "{}s{}q".format(tag, i + 1)))
+				break	
+	
+	
+	def line_it_ne(self, preperk0, x0, y0, perk1, x1, y1, *args):
+		# FIX FUNCTIONS, COMMENT, REFACTOR, SEPARATE
+		perk0 = preperk0[0]
+		diff = self.perksl[perk0]["level"][0] / float(preperk0[1])  # % in decimals
+		distance = y1 - y0
+		tag = "perk_{}2perk_{}".format(perk0, perk1)
+		#c = "#672211"
+		#c1 = "#421111"
+		c, c1 = self.c, self.c1
+		l = x0 - x1
+		sl = distance / 2.0
+		# create border lines
+		self.mrect(x0 - 2, y0, 3, sl, fill=c,
+			tags=(tag, "ptree", "{}s1".format(tag)))
+		change = 3
+		l = -l
+		self.mrect(x0 - 2 + change, y0 + sl, l, 3, fill=c, 
+			tags=(tag, "ptree", "{}s2".format(tag)))
+		self.mrect(x1 - 2, y1, 3, -sl, fill=c,
+			tags=(tag, "ptree", "{}s3".format(tag)))
+		# create progress lines
+		distance = -distance
+		lsize = l + distance  # length of border line
+		lunits = lsize * diff  # length of line
+		distance *= -1
+		llist = [
+			((x0-2), y0, (distance / 2.0)), 
+			((x0-2 + change), (y0 + sl), ((distance / 2.0) - l)), 
+			((x1-2), (y0 + sl), (distance - l))
+		]
+		for i in range(3):
+			if abs(lunits) >= abs(llist[i][2]):
+				self.cn.itemconfigure(self.m("{}s{}".format(tag, i + 1)),
+					fill=c1)
+			elif abs(lunits) != 0:
+				if i != 1:
+					w, h = 3, sl
+					z = 0 if i == 0 else llist[i-1][2]
+					nunits = abs(lunits) - z
+					h = sl * (nunits / sl)
+				else:
+					w, h = l, 3
+					nunits =  llist[i-1][2] - abs(lunits)
+					w = l * (nunits / l)
+				self.mrect(llist[i][0], llist[i][1], w, h, fill=c1,
+					tags=(tag, "ptree", "{}s{}q".format(tag, i + 1)))
+				break
+	
+	
+	def line_it(self, preq_perk, perk1, *args):
+		# creates a line from perk to perk
+		# preq_perk must be on higher than perk1
+		perk0 = preq_perk[0]
+		coords0 = self.cn.coords(self.m("perk_{}_img".format(perk0)))
+		coords1 = self.cn.coords(self.m("perk_{}_img".format(perk1)))
+		x0, y0 = coords0[0] + 20, coords0[1] + 40
+		x1, y1 = coords1[0] + 20, coords1[1]
+		# perk1 is below perk0
+		if x0 == x1:
+			self.line_it_n(preq_perk, x0, y0, perk1, x1, y1)
+		elif x0 < x1:
+			self.line_it_nw(preq_perk, x0, y0, perk1, x1, y1)
+		elif x0 > x1:
+			self.line_it_ne(preq_perk, x0, y0, perk1, x1, y1)
 			
+	
+	def create_perk(self, x, y, perk, *args):
+		# 609 / 3 = 203 per class tree
+		# nw coord, 40x40img 
+		p = self.perksl[perk]
+		self.mimg(x, y, p["img"],
+			("perk_{}_img".format(perk), "perk_{}".format(perk), "ptree", "pi"))
+		self.mrect(x + 40, y + 1, 7, 38, tags=("pi"), fill="black")
+		h = float(34) * (p["level"][0] / float(p["level"][1]))
+		if p["level"][0] > 0:
+			self.mrect(x + 41, y + 37, 5, -h, fill="brown", tags=("ptree", "pi"))
+		# hover_stats
+		if p["prerequisite"] != None:
+			a = p["prerequisite"]
+			if self.perksl[a[0]]["level"][0] < a[1]:  # perk lvl < req. lvl
+				self.square_it(perk)
+				id = self.m("perk_{}2perk_{}".format(a[0], perk))
+			self.line_it(a, perk)
+		tag = self.m("perk_{}".format(perk))
+		self.cn.tag_bind(tag, "<Button-1>",
+			lambda _=1, perk=perk: self.addcheck_perk(perk, 0))
+		self.cn.tag_bind(tag, "<Enter>",
+			lambda _=1, x=x, y=y, perk=perk: self.hoverstats_perks(x, y, perk))
+		self.cn.tag_bind(tag, "<Leave>",
+			lambda _=1: self.hoverstats_perks_fade())
+		self.cn.tag_raise(self.m("pi"))  # make perk imgs visible
+		
+		
+	def create_perktree(self, *args):
+		#self.create_perk(195, 265, "swordDMG0")
+		x0, y0 = 190, 345
+		self.create_perk(x0-87, y0, "dodge0")
+		self.create_perk(x0-87, y0+(52 * 2), "dodgeMX0")
+		self.create_perk(x0, y0, "swordDMG0")
+		self.create_perk(x0, y0+52, "swordHC0")
+		self.create_perk(x0+52, y0+52, "swordCC0")
+		self.create_perk(x0+52, y0+(52 * 2), "swordMX0")
+		
+	
+	def set_playerstats(self, *args):
+		def m(tags):
+			return self.m(tags)
+		p1 = self.p1data
+		X, Y = 95, 85  # starting nw coords of the partyl inv panels
+		'''
+		a = [  # Name, Value, Cap
+			["HP:", p1["stats"][0][0], p1["stats"][0][1]],
+			["Atk:", p1["stats"][4], 100], 
+			["D%:", p1["stats"][2], 100], 
+			["H%:", p1["stats"][6], 100], 
+			["C%:", p1["stats"][8], 100],
+			["lvl:", p1["stats"][5]/1000, None], 
+			["Def:", p1["stats"][3], 100], 
+			["AP:",  p1["stats"][1], 10], 
+			["IA%:", p1["stats"][7], 100], 
+			["Cd%:", p1["stats"][9], 1000]
+		]
+		'''
+		a = [  # Name, Value, Cap
+			["HP:", round(p1["stats"][0][0], 1), round(p1["stats"][0][1], 1)],
+			["Atk:", round(p1["stats"][4], 1), 100], 
+			["D%:", round(p1["stats"][2], 1), 100], 
+			["H%:", round(p1["stats"][6], 1), 100], 
+			["C%:", round(p1["stats"][8], 1), 100],
+			["lvl:", int(p1["stats"][5]/1000), None], 
+			["Def:", round(p1["stats"][3], 1), 100], 
+			["AP:",  round(p1["stats"][1], 1), 10], 
+			["IA%:", round(p1["stats"][7], 1), 100], 
+			["Cd%:", int(p1["stats"][9]), 1000]
+		]
+		self.cn.delete(m("pmain_stats"))
+		for row in range(2):
+			for col in range(5):
+				n = col + (row * 5)
+				w, h = 125 if col == 0 else 78, 22
+				x1, y1 = X + 106 + (col * (w + 4)), Y + 27 + (row * (h + 3))
+				b = 47
+				x1 += 0 if col == 0 else b  # make space due to rect increase
+				txt, astat_txt = a[n][0][:-1], a[n][1]
+				'''
+				if n == 0: # HP
+					a1, a2, = round(a[n][1], 1), round(a[n][2], 1) 
+					astat_txt = "{}/{}".format(a1, a2)
+				elif n in [1, 2, 3, 4, 6, 7, 8]:
+					astat_txt = round(astat_txt, 1)
+				else:
+					astat_txt = int(astat_txt)
+				'''
+				l = w
+				if a[n][2] != None:
+					l = float(w) * (a[n][1] / float(a[n][2]))
+					l = w if l > w else l
+				# create stat display
+				self.mrect(x1, y1, w, h, "#851122", 
+					tags=("p1_{}bar_bg".format(txt), "pmain_stats"))
+				self.mrect(x1, y1, l, h, "brown",
+					tags=("p1_{}bar".format(txt), "pmain_stats"))
+				self.mtxt(x1 + 2, y1 + 1, a[n][0],
+					font=self.font2, tags=("pmain_stats"))
+				self.mtxt(x1 + w - 3, y1 + 1, astat_txt,
+					font=self.font2, anchor="ne",
+					tags=("p1_{}".format(txt), "pmain_stats"))
+ 		
+	
+	def set_ui(self, *args):  # ui skeleton
+		self.mimg(400, 50, "inv_bg-635x485", anchor="n")
+		self.mimg(400, 50, "inv_bgt-635x25", anchor="n")
+		X, Y = 95, 85  # starting nw coords of the partyl inv panel
+		self.mimg(X, Y, "ava_player-100x105", tags=("p1_ava"))  # default ava
+		self.mtxt(X+106, Y+5, "Geralt of Rpivilon", font=self.font1b,
+			tags=("p1_name", "p1_stats"))
+		self.mtxt(X+558, Y+5, "0 Perk(s) Available", font=self.font1,
+			anchor="ne", tags=("p1_perks", "p1_stats"))
+		self.set_playerstats()
+		self.count_perkpoints()
+		self.create_perktree()
+		self.mtxt(702, Y-5, "Leave", font=(self.f1, 11), anchor="ne")
+		self.mimg(706, Y+15, "img_button2", tags=("leave_btn"), anchor="ne")	
+		self.cn.tag_bind(self.m("leave_btn"), "<Button-1>", self.leave_perks_ui)
+		for i in range(3):
+			x = 94 + (i * 205)
+			y = 200
+			self.mimg(x, y, "s{}-203x300".format(i+1))
+		self.mbtn(498, 168, "Save Perks", self.save_perks)
+		self.mbtn(597, 168, "Cancel", self.reset_perks)
+		self.cn.tag_lower(self.m("btn_Save Perks"))
+		self.cn.tag_lower(self.m("btn_Cancel"))
+		#self.cn.tag_bind(self.m("p1_ava"), "<Button-1>", self.save_perks)
+		
+		
+	def leave_perks_ui(self, *args):
+		self.cn.delete(self.mtag)
+		self.extract()
+		
+	
+	def reset_perks(self, *args):
+		self.world.start_perks("THE_PLAYER", override=True)
+		
+
+	def hoverstats_perks_fade(self, stage=0, *args):
+		if stage == 0:
+			if self.go is not None:
+				self.parent.after_cancel(self.go)
+				self.go = None
+			if self.go1 is not None:
+				self.parent.after_cancel(self.go1)
+				self.go1 = None
+			self.go1 = self.parent.after(100, lambda: self.hoverstats_perks_fade(1))
+		elif stage == 1:
+			self.cn.delete(self.m("hover_stats"))
+		
+	
+	def hoverstats_perks(self, x, y, perk, stage=0, *args):
+		# separate to prevent crashing, crashes after called multiple times instead of once
+		#self.cn.delete(self.m("hover_stats"))
+		xn = x + 49
+		yn = y - 7
+		if stage == 0:
+			if self.go is not None:
+				self.parent.after_cancel(self.go)
+				self.go = None
+			self.go = self.parent.after(125, lambda: self.hoverstats_perks(x, y, perk, stage=1))
+		elif stage == 1:
+			pl = self.perksl
+			pname = pl[perk]["name"]
+			pdesc = pl[perk]["desc"]
+			pdesc = "" if pdesc == None else pdesc
+			paffects = ""
+			for i in range(len(pl[perk]["affects"])):
+				a = pl[perk]["affects"][i]
+				c = pl[perk]["change"][i][:-3]
+				z = pl[perk]["level"]
+				paffects += "lvl: {}/{}".format(z[0], z[1])
+				'''
+				n = "+" if c > 0 else "-"
+				z = "%" if pl[perk]["change"][i][-3:] == "(%)" else ""
+				b = "{}{}{}".format(n, c, z)
+				#x = " {}: {}".format(a, b)
+				x = " {}".format(b)
+				paffects += x
+				'''
+			mtag = "hover_stats"
+			self.mimg(xn, yn, image="hover_stats", tags=mtag)
+			self.mtxt(xn+5, yn+5, txt=pname, font=self.font1b, tags=mtag)
+			self.mtxt(xn+7, yn+5+17, txt=pdesc, font=self.font2, tags=mtag, width=125)
+			#self.make_txt(xn+150-5-67, yn-3+105, txt="Scnr:", font=self.font1, tags=mtag, anchor="se")
+			self.mtxt(xn+150-5, yn-3+105, txt=paffects, font=self.font1, tags=mtag, anchor="se")
+		
+		
+	def m(self, tag):
+		return "{}_{}".format(self.mtag, tag)
+	
+	
+	def check_tags(self, tags):
+		# Input: ("a", "b")
+		# Output: (mtag, "mtag_a", "mtag_b")
+		if tags is None:
+			tags = (self.mtag, self.gtag)
+		elif isinstance(tags, str):  # string
+			x = [self.m(tags)]
+			tags = tuple([self.mtag, self.gtag] + x)
+		else:
+			x = []
+			for i in tags:
+				x.append(self.m(i))
+			tags = tuple([self.mtag, self.gtag] + x)
+		return tags
+	
+	
+	def mbtn(self, x1, y1, text, command, w=None, *args):
+		if w is None:
+			w = 4 + (9 * len(text))
+		tag = "btn_{}".format(text)
+		self.mrect(x1, y1, w, 25, "brown", tag, "black", 2)
+		x2, y2 = x1 + (w / 2) - 1, y1 + 1
+		self.mtxt(x2, y2, text, tag, anchor=tk.N, width=w)
+		if command is not None:
+			self.cn.tag_bind(self.m(tag), "<Button-1>", lambda _=1: command())
+	
+	
+	def mrect(self, x1, y1, w, h, fill="black", tags=None, c=None, width=0):
+		tags = self.check_tags(tags)  # must be tuple
+		self.cn.create_rectangle(x1, y1, x1+w, y1+h, fill=fill, tags=tags,
+			outline=c, width=width)
+		
+	
+	def mimg(self, x, y, image, tags=None, anchor=tk.NW, *args):
+		tags = self.check_tags(tags)  # must be tuple
+		self.cn.create_image(x, y, image=self.rsc[image], tags=tags,
+			anchor=anchor)
+			
+		
+	def mtxt(self, x, y, txt, tags=None, font=None, anchor=tk.NW,
+		fill="black", width=250, align="left", *args):
+		tags = self.check_tags(tags)  # must be tuple
+		font = (self.f1, self.fsz1) if font is None else font
+		self.cn.create_text(x, y, text=txt, tags=tags, font=font,
+			anchor=anchor, fill=fill, width=width, justify=align)			
+
+	
 class Places:
 	def __init__(self, world, place, extract=None, startxy=None,
 		mlmt=None, *arg, **kwarg):

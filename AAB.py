@@ -1,3 +1,4 @@
+import copy
 import game_data
 import game_dialogs
 import game_ui
@@ -79,6 +80,7 @@ class AAB:
 		self._mbtn(54+(2*79), 558, "Quest", None, w=76, h=38, font=(self.fn[0], 14), txty_change=5)
 		self.cn.tag_bind(self._m("btn_Quest"), "<Button-1>", self.start_quest)
 		self.cn.tag_bind(self._m("btn_Lurco"), "<Button-1>", lambda _=1: self.start_player_inv())
+		self.cn.tag_bind(self._m("btn_Perks"), "<Button-1>", lambda _=1: self.start_perks())
 		self._mbtn(54+(3*79), 558, "Map", None, w=76, h=38, font=(self.fn[0], 14), txty_change=5)
 		#self._mbtn(60, 545, "Inventory", None)
 		self.cn.tag_bind(self._m("btn_Avatar"), "<Button-1>",
@@ -108,7 +110,7 @@ class AAB:
 		self.items = game_data.items
 		self.map = game_data.map
 		self.map_places = {}
-		#self.perks = game_data.perks
+		self.perks = game_data.perks
 		self.quests = game_data.quests
 		self.aktivql = ["A00"]  # current active quests
 		self.fertigql = []  # current completed quests
@@ -205,6 +207,49 @@ class AAB:
 			self._uistatus("aktiv")
 			self.check_quests()
 			self.go_dialog = game_ui.Dialogs(self, dialog_id, end_dialog)
+	
+	
+	def start_perks(self, party1="THE_PLAYER", extract=None, override=False, *args):
+		def lv_(s=0, *args):
+			if s == 0:
+				try: self.go_place.aktiv_ui = True
+				except: pass
+				self.parent.after(100, lambda _=1: lv_(1))
+			else:
+				try: self.go_place.aktiv_ui = False
+				except: pass
+		def end_perkbox(*args):
+			self.aktiv_caUI = False
+			self._uistatus("inaktiv")
+			lv_()
+			if extract is not None:
+				extract()
+		def perksg1(*args):
+			# copy to not mix values with real ones.
+			self.characters[party1] = copy.deepcopy(self.go_perks.p1data)
+			self.perks = copy.deepcopy(self.go_perks.perksl)
+			for i in range(len(self.characters[party1]["stats"])):
+				if i == 0:
+					a = float(self.characters[party1]["stats"][i][0])
+					b = float(self.characters[party1]["stats"][i][1])
+					self.characters[party1]["stats"][i][0] = round(a, 1)
+					self.characters[party1]["stats"][i][1]= round(b, 1)
+				elif i in [5, 9]:
+					self.characters[party1]["stats"][i] = int(self.characters[party1]["stats"][i])
+				else:
+					n = float(self.characters[party1]["stats"][i])
+					self.characters[party1]["stats"][i] = round(n, 1)
+			for k, v in self.characters[party1]["mods"].items():
+				for x in range(len(v)):
+					v[x] = round(v[x], 1)
+		if not self.aktiv_caUI or override == True:
+			self.aktiv_caUI = True
+			try: self.go_place.aktiv_ui = True
+			except: pass
+			self._uistatus("aktiv")
+			self.cn.delete("caUI")
+			self.aktiv_caUI = True
+			self.go_perks = game_ui.Perks(self, self.characters[party1], end_perkbox, perksg1)
 	
 	
 	def start_place(self, place, extract=None, startxy=None, *args):

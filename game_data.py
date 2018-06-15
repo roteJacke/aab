@@ -133,6 +133,66 @@ items = {
 		"attack_value": 7
 	},
 }
+perks = {
+	# % % r r r
+	# "HP", "AP", "Dodge%", "Def", "Atk"
+	# %/raw for each type, not both to avoid errors
+	#"sym": ["HP", "AP", "Dodge%", "Def", "Atk"],
+	"swordDMG0": {
+		"name": "Sword Mastery I",
+		"desc": "Increases sword damage by 13.5%",
+		"level": [0, 10],
+		"affects": ["swordDB"], 
+		"change": ["13.5raw"],
+		"prerequisite": None,
+		"img": "perk_swordi-40x40",
+	},
+	"swordHC0": {
+		"name": "Fruit Slicer",
+		"desc": "Increases sword hit chance by 4.5%",
+		"level": [0, 5],
+		"affects": ["swordHC"], 
+		"change": ["4.5raw"],
+		"prerequisite": ("swordDMG0", 3),
+		"img": "perk_fruitslicer-40x40",
+	},
+	"swordCC0": {
+		"name": "Piercing Strike",
+		"desc": "Increase sword critical hit chance by 7.5%",
+		"level": [0, 4],
+		"affects": ["swordCC"], 
+		"change": ["7.5raw"],
+		"prerequisite": ("swordDMG0", 2),
+		"img": "perk_piercingstrike-40x40",
+	},
+	"swordMX0": {
+		"name": "Sword Adept",
+		"desc": "Increases sword damage by 75%",
+		"level": [0, 1],
+		"affects": ["swordDB"], 
+		"change": ["75raw"],
+		"prerequisite": ("swordHC0", 5),
+		"img": "perk_swordadept-40x40",
+	},
+	"dodge0": {
+		"name": "Fast Reflexes",
+		"desc": "Increases dodge by 2.9%",
+		"level": [0, 9],
+		"affects": ["Dodge%"], 
+		"change": ["2.9raw"],
+		"prerequisite": None,
+		"img": "perk_fastreflex-40x40",
+	},
+	"dodgeMX0": {
+		"name": "Faster Reflexes",
+		"desc": "Increases dodge by 7.5%",
+		"level": [0, 1],
+		"affects": ["Dodge%"], 
+		"change": ["7.5raw"],
+		"prerequisite": ("dodge0", 9),
+		"img": "perk_fasterreflex-40x40",
+	},
+}
 map = {
 	"Badlands": {  # region
 		"places": {
