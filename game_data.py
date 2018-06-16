@@ -46,8 +46,8 @@ characters = {
 			[17, 17], 1, 5, 1, 2, 0,
 			50, 15, 15, 25, 0
 		],
-		"avatar": None,
-		"image": None,
+		"avatar": "bandit_ava",
+		"image": "aBandit-01",
 	},
 }
 containers = {

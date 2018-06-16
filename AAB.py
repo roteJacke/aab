@@ -4,7 +4,9 @@ import game_dialogs
 import game_ui
 import math
 import os
+import random as rd
 import tkinter as tk
+#import winsound as ws
 
 
 
@@ -185,6 +187,52 @@ class AAB:
 		for i in range(len(a)):
 			tag = self._m("btn_{}".format(a[i]))
 			self.cn.tag_raise(tag)
+	
+	
+	def start_battle(self, enemy, paths=None, player="THE_PLAYER", *args):
+		def end_fight(paths, *args):
+			self._uistatus("inaktiv")
+			#self.disable_cm(0)
+			#self.in_battle = False
+			# paths: 3 functions for win, defeat, flee. respectively. 0, 1, 2
+			self.battle_result = self.cn.itemcget("battle_result", "text")
+			self.cn.delete("battle_ui", "battle_result")
+			self.characters[player] = copy.deepcopy(sc.player)
+			#self.char[player]["coin"] += copy.deepcopy(sc.enemy["coin"])
+			if paths != None:
+				if "Victory" in self.battle_result:
+					self.start_dialog(paths[0])
+					# temp 
+					#self.dialog[paths[0]]["rewards"][1] = self.scale_exp(self.dialog[paths[0]]["rewards"][1])
+					self.characters[player]["stats"][5] += self.dialog[paths[0]]["rewards"][1]
+					self.characters[player]["coin"] += self.dialog[paths[0]]["rewards"][0]
+				elif "Defeat" in self.battle_result:
+					x = rd.randint(0, 10)
+					if x <= 5:
+						self.start_dialog(paths[2])
+					else:
+						self._mimg(0, 0, "aBg1")
+						self.start_dialog(paths[1])
+				elif "Flee" in self.battle_result:
+					self.start_dialog(paths[2])
+				else:
+					pass
+					#print self.battle_result
+		#self.cn.delete("dialogUI")
+		#sc = aBtl1.Battle(self.parent, self.cn, self.e["AnEncounterOnTheRoad-FleePass"])
+		'''
+		sc = aBtl1.Battle(self.parent, self.cn, lambda: end_fight(
+			[self.e["AnEncounterOnTheRoad-FightPass"], 
+			self.e["AnEncounterOnTheRoad-FightFail"],
+			self.e["AnEncounterOnTheRoad-FleePass"]]))
+		sc.battle("The Player", "Brigands0")
+		'''
+		sc = game_ui.Battle(self, self.cn, self.characters[player], self.characters[enemy], 
+			lambda _=1: end_fight(paths))
+		self._uistatus("aktiv")
+		#self.disable_cm()
+		self.cn.delete("caUI")
+		#self.in_battle = True
 	
 	
 	def start_dialog(self, dialog_id, extract=None, *args):

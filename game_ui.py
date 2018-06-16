@@ -1,7 +1,683 @@
 import copy
 import math
+import random as rd
 import tkinter as tk
+#import winsound as ws
 
+
+
+class Battle:
+	def __init__(self, world, canvas, player, enemy, extract_func, *args, **kwargs):
+		self.parent = world.parent
+		self.world = world
+		self.cn = canvas
+		self.extract = extract_func
+		self.rsc = self.world.rsc
+		self.items = self.world.items
+		self.player = player
+		self.enemy = enemy
+		
+		#self.load_resources()
+		#self.set_playerstats()
+		self.battle(self.player, self.enemy)
+		
+		self.game_stat = "ongoing"
+		self.game_valus = "10/10"
+		
+	
+	def load_resources(self, *args):
+		'''
+		self.attacks = {
+			"Slash": {
+				"Damage": 2.5,
+				"AP cost": 1.0
+			},
+			"Chop": {
+				"Damage": 4,
+				"AP cost": 1.5
+			},
+			"Shank": {
+				"Damage": 0.75,
+				"AP cost": 1
+			}
+		}
+		'''
+		pass
+
+		
+	def place_image(self, x, y, rsc, tags, anchor="west", *args):	
+		self.cn.create_image(x, y, anchor=anchor, image=self.rsc[rsc],
+			tags=tags)
+	
+	
+	def battle(self, player, enemy, *args):
+		# STILL CHANGING VALUE OF MAIN ACTORS?!
+		# new battle stats
+		self.pbs = {
+			"attack": player["stats"][4],
+			"defense": player["stats"][3],
+			"dodge": player["stats"][2],
+			"HC": player["stats"][6],
+			"IA": player["stats"][7],
+			"CC": player["stats"][8],
+			"Cd": player["stats"][9],
+		}
+		self.ebs = {
+			"attack": enemy["stats"][4],
+			"defense": enemy["stats"][3],
+			"dodge": enemy["stats"][2],
+			"HC": enemy["stats"][6],
+			"IA": enemy["stats"][7],
+			"CC": enemy["stats"][8],
+			"Cd": enemy["stats"][9],
+		}		
+		# init player values
+		self.pName = player["name"] 
+		self.pHP = player["stats"][0]  # hp_now/hp_max
+		#self.pAttk = self.actors[player]["Attack"]  # key for self.attacks
+		self.pAttk = "Traveler"  # name only needed
+		self.pDAMAGE = player["stats"][4]  # damage already calculated
+		# below did not change the dictionary
+		ptonic_num = 0
+		for i in player["inventory"]:
+			if self.items[i]["type"] == "potion":
+				ptonic_num += 1
+		self.pTonics = ptonic_num  # num. of tonics
+		self.pTonics_max = ptonic_num * 1
+		self.pAP = player["stats"][1]  # Action Points
+		self.pAP_max = player["stats"][1] * 1
+		self.pIMG = player["image"]  # battle image
+		self.pAvt = player["avatar"]  # battle avatar
+		# init enemy values
+		self.eName = enemy["name"]
+		self.eHP = enemy["stats"][0]  # hp_now/hp_max
+		self.eAttk = "Bandit"  # key for self.attacks
+		self.eDAMAGE = enemy["stats"][4]
+		etonic_num = 0
+		for i in enemy["inventory"]:
+			if self.items[i]["type"] == "potion":
+				etonic_num += 1
+		self.eTonics = etonic_num  # num. of tonics
+		self.eTonics_max = etonic_num * 1
+		self.eAP = enemy["stats"][1]  # Action Points
+		self.eAP_max = enemy["stats"][1] * 1
+		self.eIMG = enemy["image"]  # battle image
+		self.eAvt = enemy["avatar"]  # battle avatar
+		
+		#ws.PlaySound('Volatile_Reaction.wav', ws.SND_FILENAME | ws.SND_ASYNC)
+		
+		# init game stats
+		self.turn_holder = "Player"
+		self.round_num = 1
+		self.attking = None  # animation
+		# roof.after animation
+		self.pMOVE = None
+		self.eMOVE = None
+		self.pdMOVE = None
+		self.edMOVE = None
+		self.pDODGED = False
+		self.eDODGED = False
+		self.ani_effect = None  # animation effect
+		
+		# UI MAKER
+		def reset_imgs(*args):
+			# reset player and enemy images to original position
+			self.cn.delete(self.pIMG, self.eIMG)
+			#create_image(90, 140, self.pIMG)  # player img
+			#create_image(560, 140, self.eIMG)  # enemy img
+			create_image(115, 140, self.pIMG)  # player img
+			create_image(535, 140, self.eIMG)  # enemy img
+		
+		
+		def create_image(x, y, rsc, tagn=None, tagOverride=None, anchor=tk.NW):
+			t1, t2, tagn = "ui", "battle_ui", tagn if tagn != None else rsc
+			if tagOverride is not None:
+				ntags = tagOverride
+			else:
+				ntags = (t1, t2, tagn)
+			self.cn.create_image(x, y, anchor=anchor, image=self.rsc[rsc], 
+				tags=ntags)
+				
+		
+		def create_text(x, y, txt, tagn=None, anchor="nw", font=("Helvetica",
+				12, "bold"), fill="white"):
+			#t1, t2 = "ui", "battle_ui"
+			t1, t2, tagn = "ui", "battle_ui", tagn if tagn != None else txt
+			self.cn.create_text(x, y, text=txt, tags=(t1, t2, tagn), font=font,
+				anchor=anchor, fill=fill)
+				
+		
+		def create_rect(x1, y1, x2, y2, tagn, fill, outl="", tagOverride=None):
+			t1, t2 = "ui", "battle_ui"
+			ntag = (t1, t2, tagn)
+			if tagOverride is not None:
+				ntag = tagOverride
+			self.cn.create_rectangle(x1, y1, x2, y2, tags=ntag,
+				fill=fill, outline=outl)
+				
+				
+		def pznt(num_list):
+			# Takes a list of 2 numbers
+			num_list = [float(n) for n in num_list]
+			return str(int(num_list[0] / num_list[1] * 100))
+			
+		
+		# check drawing for info, x += 20, y += 50
+		#create_image(0, 0, "aBg1")	# bg to block world ui
+		create_image(20, 50, "aCbg1")  # bg for battle ui
+		create_image(30, 85, "aFbg1")  # fight bg
+		create_image(30, 60, "aCtui1")  # top ui
+		create_image(30, 385, "aClui1")  # lower ui
+		#btn_img = ["aSlash0", "aTonic0", "aFlee0"]
+		btn_img = ["aBtn0_Slash-0", "aBtn0_Tonic-0", "aBtn0_Flee-0"]
+		for i in range(3): # create the buttons
+			create_image(300+(i*70), 410, btn_img[i], "btn{}".format(i))
+		create_image(140, 410, "aCd1", "bPdl1")  # player stats
+		create_image(510, 410, "aCd1", "bEdl1")  # moved position
+		#create_image(90, 140, self.pIMG)  # player img
+		#create_image(560, 140, self.eIMG)  # enemy img
+		create_image(115, 140, self.pIMG)  # player img
+		create_image(535, 140, self.eIMG)  # enemy img
+		create_image(40, 410, self.pAvt)  # player avatar
+		create_image(660, 410, self.eAvt)  # moved position
+		create_text(400, 73, "Round {}".format(self.round_num), "round_num", anchor="center")  # self.hcolor
+		create_text(400, 98, "{}'s Turn".format(self.turn_holder), "turn_holder", anchor="center")
+		
+		self.hheight = 20  # height of HP bar
+		self.rheight = 15  # height of AP bar
+		self.hcolor = "white"  # color of text on hpBar
+		self.hpbgc = "black"  # color of the hp bg box
+		self.hstart = 482  # height of stats of hp bar
+		
+		# Player stats
+		#_pAttk = "{}, {} dmg".format(self.pAttk, self.attacks[self.pAttk]["Damage"])
+		#_pAttk = "{}, {} dmg".format(self.pAttk, self.pDAMAGE)
+		_pAttk = "ATK: {},  DEF: {}".format(
+			self.pbs["attack"],
+			self.pbs["defense"],
+		)
+		_pTonics = "{} Tonics".format(self.pTonics)
+		_pHP = "{}/{}".format(self.pHP[0], self.pHP[1])
+		_pHPpz = "{}%".format(pznt(self.pHP))
+		_pAP = "AP: {}".format(self.pAP)
+		create_text(144, 415, self.pName, font=("Helvetica",
+				12, "bold"), fill="white")
+		create_text(144, 440, _pAttk, "pStats_Attack", font=("Helvetica",
+				10, "bold"), fill="white")
+		create_text(144, 455, _pTonics, "pStats_Tonics", font=("Helvetica",
+				10, "bold"), fill="white")
+		# HP & AP bars           # reduce by 2p(1side each) to fit screen?
+		create_rect(141, 514-self.rheight-self.hheight, 289, 514-self.rheight, "pHP_box", self.hpbgc)
+		create_rect(141, 514-self.rheight-self.hheight, 289, 514-self.rheight, "pHP_color", "red")
+		create_rect(141, 514-self.rheight, 289, 514, "pAP_box", self.hpbgc)
+		create_rect(141, 514-self.rheight, 289, 514, "pAP_color", "green")
+		# Vertical HP bar  - removed
+		# HP & AP stats
+		create_text(142, self.hstart, _pHP, "pStats_HPcount", fill=self.hcolor)
+		create_text(288, self.hstart, _pHPpz, "pStats_HP%", anchor="ne", fill=self.hcolor)
+		create_text(142, 500, _pAP, "pStats_AP", font=("Helvetica", 10, "bold"), fill="white")  # 287, 465 , anchor="ne"
+		
+		# Enemy stats
+		#_eAttk = "{}, {} dmg".format(self.eAttk, self.eDAMAGE)
+		_eAttk = "ATK: {},  DEF: {}".format(
+			self.ebs["attack"],
+			self.ebs["defense"],
+		)
+		_eTonics = "{} Tonics".format(self.eTonics)
+		_eHP = "{}/{}".format(self.eHP[0], self.eHP[1])
+		_eHPpz = "{}%".format(pznt(self.eHP))
+		_eAP = "AP: {}".format(self.eAP)
+		create_text(656, 415, self.eName, anchor="ne")  # 512
+		create_text(656, 440, _eAttk, "eStats_Attack", anchor="ne", font=("Helvetica",
+				10, "bold"), fill="white")
+		create_text(656, 455, _eTonics, "eStats_Tonics", anchor="ne", font=("Helvetica",
+				10, "bold"), fill="white")
+		# HP & AP bars           # reduce by 2p(1side each) to fit screen?
+		create_rect(511, 514-self.rheight-self.hheight, 659, 514, "eHP_box", self.hpbgc)
+		create_rect(511, 514-self.rheight-self.hheight, 659, 514, "eHP_color", "red")
+		create_rect(511, 514-self.rheight, 659, 514, "eAP_box", self.hpbgc)
+		create_rect(511, 514-self.rheight, 659, 514, "eAP_color", "green")
+		# Vertical HP bar  - removed
+		# HP & AP stats
+		#create_text(513, 465, _eAP, "eStats_AP")
+		create_text(512, self.hstart, _eHPpz, "eStats_HP%", fill=self.hcolor)
+		create_text(658, self.hstart, _eHP, "eStats_HPcount", anchor="ne", fill=self.hcolor)
+		create_text(658, 500, _eAP, "eStats_AP", anchor="ne", font=("Helvetica", 10, "bold"), fill="white")  # 513, 465 , anchor="ne"
+		
+		
+		# BATTLE FUNCTIONS
+		def display_effect(mode="Damage", dmg_num=0, *args):
+			'''mode:
+			Damage :: displays attack damage from dmg_num.
+			Tonic :: displays tonic icon.
+			Dodge :: displays dodge icon.
+			Block :: failed to flee as Player.
+			Crit :: critical.
+			'''
+			x, y = 690, 250
+			if self.turn_holder == "Enemy":  # effect being applied to.
+				x, y = 75, 250
+			if self.ani_effect is not None:
+				self.ani_effect = None
+				self.cn.delete("battle_effect")
+			xname_text = None
+			xname = ""  # rsc img name or text
+			if mode == "Damage":
+				xname = str(dmg_num)
+				xname_text = True
+			elif mode == "Tonic":
+				# reverse
+				if self.turn_holder == "Player":
+					x, y = 75, 250
+				if self.turn_holder == "Enemy":
+					x, y = 690, 250
+				xname = "aTonic-0"
+				xname_text = False
+			elif mode == "Block":
+				x, y = 75, 250
+				xname = "aBlockFail-0"
+				xname_text = False
+			elif mode == "Crit":
+				xname = "aCrit-0"
+				xname_text = False
+			else:
+				xname = "aDodge-0"
+				xname_text = False
+			if xname_text:
+				create_text(x, y, xname, "battle_effect", font=("Helvetica", 24, "bold"))
+			else:
+				create_image(x, y, xname, "battle_effect")
+			animate_effect()
+			
+		
+		def event_txt(text="", mode="display", msec=1000, *args):
+			if mode == "display":
+				create_image(400, 225, "aEtxt1", "event_txt", anchor="center")
+				create_text(400, 225, text, "event_txt", anchor="center", font=("Helvetica",
+					42, "bold"), fill="black")
+				self.cn.after(msec, lambda: event_txt(mode="delete"))
+			else:
+				self.cn.delete("event_txt")
+			
+		
+		def animate_effect(num=7, *args):
+			if num > 0:
+				self.cn.move("battle_effect", 0, -15)
+				self.ani_effect = self.parent.after(25, lambda: animate_effect(num-1))
+			else:
+				self.parent.after(250, lambda: self.cn.delete("battle_effect"))
+			
+		
+		def use_tonic(*args):
+			tonic_heal = 10
+			if self.turn_holder == "Player" and self.pHP[0] > 0:
+				if self.pTonics > 0 and self.pHP[0] < self.pHP[1] and self.pAP >= 1:
+					block_btns()  # prevent bugs due to button spam
+					new_pHP = self.pHP[0] + tonic_heal
+					new_pHP = new_pHP if new_pHP <= self.pHP[1] else self.pHP[1]
+					self.pHP[0] = new_pHP  # apply to player 
+					self.pTonics -= 1
+					self.pAP -= 1  # end attack
+					display_effect("Tonic")
+					for i in range(len(self.player["inventory"])):
+						if self.items[self.player["inventory"][i]]["type"] == "potion":
+							del self.player["inventory"][i]
+							break
+					end_attack()
+			elif self.turn_holder == "Enemy" and self.eHP[0] > 0:
+				if self.eTonics > 0 and self.eHP[0] < self.eHP[1] and self.eAP >= 1:
+					new_eHP = self.eHP[0] + tonic_heal
+					new_eHP = new_eHP if new_eHP <= self.eHP[1] else self.eHP[1]
+					self.eHP[0] = new_eHP  # apply to enemy 
+					self.eTonics -= 1
+					self.eAP -= 1  # end attack
+					#self.parent.after(500, end_attack)  # delay causes movement error
+					display_effect("Tonic")
+					end_attack()
+			update_display()
+			
+		
+		def update_round(*args):
+			self.cn.itemconfigure("round_num", 
+				text="Round {}".format(self.round_num))
+		
+		
+		def flee_battle(*args):
+			if self.turn_holder == "Player" and self.pHP[0] > 0:
+				block_btns()
+				roll = rd.randint(1, 10)
+				if roll <= 5:  # 50% chance of succeeding
+					self.pAP = 0
+					display_effect("Block")
+					self.parent.after(250, lambda: event_txt("Fleeing!", msec=2500))
+					update_display()
+					self.turn_holder = "Flee"
+					self.cn.itemconfigure("turn_holder", tag="battle_result")
+					self.cn.itemconfigure("battle_result", text="Flee-2/10-1-20")
+					self.cn.tag_lower("battle_result")  # hide text from view
+					self.parent.after(1500, exit_battle)
+				else:
+					self.pAP = 0
+					display_effect("Block")
+					self.parent.after(250, lambda: event_txt("Failed to flee!", msec=750))
+					update_display()
+					self.parent.after(1250, lambda: end_attack())
+					
+		
+		def exit_battle(*args):
+			#self.cn.delete("battle_ui")
+			# changes value of self.actors, how/why? how do we avoid this
+			self.eHP[0] = self.eHP[1]  # reset enemy HP
+			self.round_num = 1
+			#ws.PlaySound(None, ws.SND_PURGE)
+			self.extract() 
+		
+		
+		def attack(*args):
+			# spamming not stopping
+			if self.attking is None:
+				###print "attacking"
+				self.attcking = True
+				# Cancel if there is movement
+				if self.pMOVE is not None:
+					self.parent.after_cancel(self.pMOVE)
+				if self.eMOVE is not None:
+					self.parent.after_cancel(self.eMOVE)
+				reset_imgs()  # put img in original positions
+				block_btns()
+				if self.turn_holder == "Enemy":  # make enemy use tonic instead
+					if self.eHP[0]/float(self.eHP[1]) <= 0.25 and self.eTonics > 0 and self.eAP >= 1:
+						use_tonic()
+						#end_attack()
+					else:
+						# 500 may cause program to crash
+						# remove AP from Enemy
+						self.eAP -= 1
+						#self.eAP = self.eAP if self.eAP >= 0 else 0
+						#self.parent.after(100, animate_attack)
+						if self.eAP >= 0:
+							self.parent.after(100, animate_attack)
+						else:
+							self.eAP = 0  # reset
+							end_attack()
+				else:
+					#animate_attack()
+					#if self.turn_holder == "Player" and self.pHP[0] > 0:
+					self.pAP -= 1
+					#self.pAP = self.pAP if self.pAP >= 0 else 0
+					if self.pAP >= 0:
+						self.parent.after(100, animate_attack)
+					else:
+						self.pAP = 0
+						end_attack()
+				update_display()
+					
+		
+		def block_btns(block=True):
+			if block is True:
+				for i in range(3): # create the buttons
+					if self.turn_holder == "Player":
+						create_image(300+(i*70), 410, "aBtn0_Wait-0", "BLOCK_btn{}".format(i))
+					else:
+						create_image(300+(i*70), 410, "aBtn0_EnemyTurn-0", "BLOCK_btn{}".format(i))
+			elif block is False:
+				self.cn.delete("BLOCK_btn0", "BLOCK_btn1", "BLOCK_btn2")
+		
+		
+		def animate_attack(num=20, *args):
+			if self.turn_holder == "Player":
+				#self.attcking = True
+				if num > 0:
+					val = -35
+					interval = 17
+					if num == 11:
+						x = rd.uniform(0.0, 100.0)
+						#if x < 1.5:  # 15% dodge chance
+						if x < (self.ebs["dodge"] / 2.0):  # 15% dodge chance
+							self.eDODGED = True
+							display_effect("Dodge")
+						else:
+							x1 = rd.uniform(0.0, 100.0)
+							if x1 < self.pbs["HC"]:
+								apply_dmg()
+							else:
+								self.eDODGED = True
+								display_effect("Dodge")
+					if num >= 11:
+						val *= -1
+					self.cn.move(self.pIMG, val, 0)
+					# animate if dodged attack
+					coords = 15  # x value
+					dcoords = 0  # y value for dodge
+					if self.eDODGED:  # values change each time function is called
+					#	n = rd.randint(0, 1)
+						dcoords = 10  # if n == 0 else -10
+					if num <= 11 and num >= 9:
+						self.cn.move(self.eIMG, coords, dcoords)
+					elif num < 9 and num >= 6:
+						self.cn.move(self.eIMG, -coords, -dcoords)
+					self.pMOVE = self.parent.after(interval, lambda: animate_attack(num-1))
+				elif num == 0:
+					end_attack()
+					
+			elif self.turn_holder == "Enemy":
+				#self.attcking = True
+				if num > 0:
+					val = 35
+					interval = 17
+					if num == 11:
+						x = rd.uniform(0.0, 100.0)
+						#if x < 2.5:  # 25% dodge chance
+						if x < (self.pbs["dodge"] / 2):  # 25% dodge chance
+							self.pDODGED = True
+							display_effect("Dodge")
+						else:
+							x1 = rd.uniform(0.0, 100.0)
+							if x1 < self.ebs["HC"]:
+								apply_dmg()
+							else:
+								self.pDODGED = True
+								display_effect("Dodge")
+					if num >= 11:
+						val *= -1
+					self.cn.move(self.eIMG, val, 0)
+					coords = 15
+					dcoords = 0
+					if self.pDODGED:
+						dcoords = 10
+					if num <= 11 and num >= 9:
+						self.cn.move(self.pIMG, -coords, dcoords)
+					elif num < 9 and num >= 6:
+						self.cn.move(self.pIMG, coords, -dcoords)
+					self.eMOVE = self.parent.after(interval, lambda: animate_attack(num-1))
+				elif num == 0:
+					end_attack()
+		
+		
+		def end_attack():
+			###print "function called"
+			# did not stop from spamming that button
+			self.attcking = None
+			#apply_dmg()
+			if self.turn_holder == "Player":
+				if self.eHP[0] == 0:
+					###print "Game has been won!"
+					self.turn_holder = "Victory"
+					self.cn.itemconfigure("turn_holder", tag="battle_result")
+					self.cn.itemconfigure("battle_result", text="Victory-10/10-0-50")
+					self.cn.tag_lower("battle_result")
+					block_btns()
+					self.parent.after(250, lambda: event_txt("Victory", msec=2500))
+					self.parent.after(1950, exit_battle)
+				else:
+					if self.pAP <= 0 or (self.pAP - self.attacks[self.pAttk]["AP cost"] < 0 and (self.pAP < 1 or self.pTonics <= 0)):
+						self.eAP = self.eAP_max
+						self.pAP = 0
+						###print "Round {}".format(self.round_num)
+						self.turn_holder = "Enemy"
+						isecs = 250
+						self.parent.after(isecs, lambda: self.cn.itemconfigure("turn_holder", font=("Helvetica", 34, "bold")))
+						self.parent.after(isecs, lambda: self.cn.itemconfigure("turn_holder", text="{}'s Turn".format(self.turn_holder)))
+						# Moved function, since next round always starts after player's AP = 0
+						msecs = 750
+						self.parent.after(isecs + msecs, lambda: self.cn.itemconfigure("turn_holder", font=("Helvetica",
+							12, "bold")))
+						self.parent.after(isecs + msecs, update_round) 
+						#self.parent.after(isecs + msecs, lambda: self.cn.move("turn_holder", 0, -100))
+						self.parent.after(250, attack)
+					else:
+						self.parent.after(250, lambda: block_btns(False))
+						#if self.pAP - self.attacks[self.pAttk]["AP cost"] < 1
+			elif self.turn_holder == "Enemy":
+				if self.pHP[0] == 0:
+					###print "Game Over!"
+					self.turn_holder = "Defeat"
+					self.cn.itemconfigure("turn_holder", tag="battle_result")
+					self.cn.itemconfigure("battle_result", text="Defeat-0/10-2-15")
+					self.cn.tag_lower("battle_result")
+					block_btns()
+					self.parent.after(250, lambda: event_txt("Defeat", msec=5000))
+					self.parent.after(2700, exit_battle)
+				else:
+					if self.eAP <= 0:
+						self.pAP = self.pAP_max
+						self.turn_holder = "Player"
+						self.parent.after(250, lambda: block_btns(False))
+						self.round_num += 1
+						# Moved function, so round will end after enemy attack.
+						# wait a bit
+						isecs = 250
+						#self.parent.after(isecs, lambda: self.cn.itemconfigure("round_num", font=("Helvetica", 34, "bold")))
+						self.parent.after(isecs, lambda: self.cn.itemconfigure("round_num", text="[Round {}]".format(self.round_num)))
+						#self.parent.after(isecs, lambda: self.cn.move("round_num", 0, 125))
+						self.parent.after(isecs, lambda: self.cn.itemconfigure("turn_holder", font=("Helvetica", 34, "bold")))
+						self.parent.after(isecs, lambda: self.cn.itemconfigure("turn_holder", text="{}'s Turn".format(self.turn_holder)))
+						# Moved function, since next round always starts after player's AP = 0
+						msecs = 750
+						self.parent.after(isecs + msecs, lambda: self.cn.itemconfigure("round_num", font=("Helvetica",
+							12, "bold")))
+						self.parent.after(isecs + msecs, lambda: self.cn.itemconfigure("turn_holder", font=("Helvetica",
+							12, "bold")))
+						self.parent.after(isecs + msecs, update_round) 
+						#self.parent.after(isecs + msecs, lambda: self.cn.move("round_num", 0, -125))
+					else:
+						self.parent.after(250, attack)
+			
+			update_display()
+			#self.cn.itemconfigure("turn_holder", text=self.turn_holder)
+			
+		
+		def apply_dmg(*args):
+			if self.turn_holder == "Player" and self.pHP[0] > 0:
+				'''
+				self.pAP -= self.attacks[self.pAttk]["AP cost"]
+				self.pAP = self.pAP if self.pAP >= 0 else 0
+				'''
+				pDMG = self.pDAMAGE
+				crit = False
+				'''
+				if self.pAttk == "Shank":
+					# add crit chance
+					x = rd.uniform(1.0, 10.0)
+					if x <= 1.5:  # 15% crit chance
+						pDMG *= 2
+						##print "Crit! Dealt {} Damage.".format(pDMG)
+						crit = True
+				'''
+				x = rd.uniform(0.0, 100.0)
+				if x < self.pbs["CC"]:
+					pDMG += (pDMG * (self.pbs["Cd"] / 100.0))
+					crit = True
+				# apply armor
+				pDMG -= (self.ebs["defense"] - (self.ebs["defense"] * (self.pbs["IA"] / 100.0)))
+				pDMG = 0 if pDMG < 0 else pDMG
+				new_eHP = self.eHP[0] - pDMG
+				new_eHP = new_eHP if new_eHP >= 0 else 0
+				self.eHP[0] = new_eHP  # apply to enemy 
+				self.eDODGED = False
+				if crit:
+					#display_effect("Crit")
+					pDMG = "[{}]".format(str(pDMG))
+					display_effect("Damage", pDMG)
+				else:
+					display_effect("Damage", pDMG)
+				update_display()  # update info
+			elif self.turn_holder == "Enemy" and self.eHP[0] > 0:
+				#self.eAP -= self.attacks[self.eAttk]["AP cost"]
+				#self.eAP = self.eAP if self.eAP >= 0 else 0
+				eDMG = self.eDAMAGE
+				crit = False
+				x1 = rd.uniform(0.0, 100.0)
+				if x1 < self.ebs["CC"]:
+					eDMG += (eDMG * (self.ebs["Cd"] / 100.0))
+					crit = True
+				eDMG -= (self.pbs["defense"] - (self.pbs["defense"] * (self.ebs["IA"] / 100.0)))
+				eDMG = 0 if eDMG < 0 else eDMG
+				new_pHP = self.pHP[0] - eDMG
+				new_pHP = new_pHP if new_pHP >= 0 else 0
+				self.pHP[0] = new_pHP  # apply to enemy 
+				self.pDODGED = False
+				if crit:
+					#display_effect("Crit")
+					eDMG = "[{}]".format(str(eDMG))
+					display_effect("Damage", eDMG)
+				else:
+					display_effect("Damage", eDMG)
+				update_display()  # update info
+				
+		
+		def update_display():
+			# include tonics next
+			self.cn.delete("pHP_color", "eHP_color", "pAP_color", "eAP_color")
+			pHP, eHP = self.pHP, self.eHP
+			pbox = pHP[0] / float(pHP[1]) * 100.0 * 1.48  # 150x25, 1% = 1.5px    now 1.48
+			ebox = eHP[0] / float(eHP[1]) * 100.0 * 1.48
+			pAbox = self.pAP / float(self.pAP_max) * 100.0 * 1.48  # calculate px
+			eAbox = self.eAP / float(self.eAP_max) * 100.0 * 1.48
+			# remade HP & AP bars
+			create_rect(140, 515-self.rheight-self.hheight, 140+pbox, 515-self.rheight, "pHP_color", "red")
+			create_rect(140, 515-self.rheight, 140+pAbox, 515, "pAP_color", "green")
+			create_rect(660-ebox, 515-self.rheight-self.hheight, 660, 515-self.rheight, "eHP_color", "red")
+			create_rect(660-eAbox, 515-self.rheight, 660, 515, "eAP_color", "green")
+			# 515
+			create_rect(141, 514-self.rheight-self.hheight, 141+pbox, 514-self.rheight, "pHP_color", "red")
+			create_rect(141, 514-self.rheight, 141+pAbox, 514, "pAP_color", "green")
+			create_rect(659-ebox, 514-self.rheight-self.hheight, 659, 514-self.rheight, "eHP_color", "red")
+			create_rect(659-eAbox, 514-self.rheight, 659, 514, "eAP_color", "green")
+			# make visible, blocked by HP & AP bars
+			self.cn.tag_raise("pStats_HPcount")
+			self.cn.tag_raise("pStats_HP%")
+			self.cn.tag_raise("pStats_AP")
+			self.cn.tag_raise("eStats_HPcount")
+			self.cn.tag_raise("eStats_HP%")
+			self.cn.tag_raise("eStats_AP")
+			
+			_pHP = "{}/{}".format(self.pHP[0], self.pHP[1])
+			_pHPpz = "{}%".format(pznt(self.pHP))
+			_pTonics = "{} Tonics".format(self.pTonics)
+			_pAP = "AP: {}".format(self.pAP)
+			_eHP = "{}/{}".format(self.eHP[0], self.eHP[1])
+			_eHPpz = "{}%".format(pznt(self.eHP))
+			_eTonics = "{} Tonics".format(self.eTonics)
+			_eAP = "AP: {}".format(self.eAP)
+			self.cn.itemconfigure("pStats_HPcount", text=_pHP)
+			self.cn.itemconfigure("pStats_HP%", text=_pHPpz)
+			self.cn.itemconfigure("pStats_Tonics", text=_pTonics)
+			self.cn.itemconfigure("pStats_AP", text=_pAP)
+			self.cn.itemconfigure("eStats_HPcount", text=_eHP)
+			self.cn.itemconfigure("eStats_HP%", text=_eHPpz)
+			self.cn.itemconfigure("eStats_Tonics", text=_eTonics)
+			self.cn.itemconfigure("eStats_AP", text=_eAP)
+			self.cn.itemconfigure("turn_holder", text="{}'s Turn".format(self.turn_holder))
+			
+	
+		self.cn.tag_bind("btn0", "<Button-1>", attack)
+		self.cn.tag_bind("btn1", "<Button-1>", use_tonic)
+		self.cn.tag_bind("btn2", "<Button-1>", flee_battle)
+		#self.cn.tag_bind("btn2", "<Button-1>", exit_battle)
+		update_display()
+		#self.place_image(400, 225, "aEtxt1", "event_txt", anchor="center")
+		self.parent.after(250, lambda: event_txt("Fight", msec=500))
 
 
 class Dialogs:
@@ -79,6 +755,8 @@ class Dialogs:
 				command = lambda _, n=x, i=i: self._go_str(i, n)
 			elif cdata[0] == "box":  # lootbox
 				command = lambda _, n=x, i=i: self._go_box(i, n)
+			elif cdata[0] == "btl":  # battle
+				command = lambda _, n=x, i=i: self._go_btl(i, n)	
 			elif cdata[0] == "ext":
 				command = lambda _=1, i=i: self._leave_dlg(i)	
 			self.cn.tag_bind(tag, "<Button-1>", command)
@@ -107,6 +785,16 @@ class Dialogs:
 			self._special_event(id)
 			self.cn.delete(self.mtag)
 			self.world.start_dialog(dialog_id)
+	
+	
+	def _go_btl(self, id, battle_data, *args):
+		if not self.world.aktiv_caUI:
+			a = battle_data.split("=")
+			self._special_event(id)
+			enemy = a[0]
+			paths = a[1].split("::")
+			#self.go_place(self.dialogdata["location"])
+			self.world.start_battle(enemy, paths)
 	
 	
 	def _go_plc(self, id, evt, xy=None, *args):

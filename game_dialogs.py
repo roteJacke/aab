@@ -198,7 +198,7 @@ dialogs = {
 		"bg_image": "place_htown",
 		"image": "dtxt_image_herald",
 		"choices": [
-			("Hit him in the face", None),
+			("Hit him in the face", "btl|bandit0=ht00::ht00::ht00"),
 			("Lootbox", "box|hausbox"),
 			("Leave", "plc|hilltown", "", (400, 260)),
 		],
