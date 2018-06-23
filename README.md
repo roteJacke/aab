@@ -9,6 +9,7 @@ This game is halfway to completion and in need of content and improvement. It's 
 
 
 It is in need of a few things to be playable and enjoyable:
+- Consisten Art Style!
 - story (basic, vengeance, you search for the killers of your wife after regaining your strength)
 - more quests / dialogs (nothing profane or nsfw)
 - more content
