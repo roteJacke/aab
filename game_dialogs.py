@@ -200,7 +200,7 @@ dialogs = {
 		"choices": [
 			("Hit him in the face", "btl|bandit0=ht00::ht00::ht00"),
 			("Lootbox", "box|hausbox"),
-			("Leave", "plc|hilltown", "", (400, 260)),
+			("Leave", "plc|hilltown", "", (230, 280)),
 		],
 		#"place": "hilltown",
 	},

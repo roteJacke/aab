@@ -207,8 +207,10 @@ map = {
 				"events": [  # condition  event  hovertext  location+image
 					(None, "dlg|ht00", "Tavern", "510-225|picon_mug-42x42"),
 					(None, "str|ferrec", "Store", "142-247|picon_gpot-42x42"),
-					(None, "dlg|ht02", "Herald", "372-242|czherald_place-50x95"),
-					("QA00|0", "box|hausbox", "Dead Herald", "720-260|czherald_place-50x95"),
+					(None, None, "Town Hall", "680-214|h1-155x190"),
+					(None, None, "", "5-265|h1-155x190"),
+					(None, "dlg|ht02", "Herald", "282-270|czherald_place-50x95"),
+					("QA00|1", "box|hausbox", "Dead Herald", "720-260|czherald_place-50x95"),
 					#("", "dialog|first_visit_hilltown_tavern", "Tavern=It's good for your health.", "450-200|b0.a-40x40"),
 				],
 				"leave_btn": True,

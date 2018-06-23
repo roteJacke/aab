@@ -35,6 +35,7 @@ class AAB:
 		# check quest conditions to adv stage
 		aktivq = []
 		inv = self.characters["THE_PLAYER"]["inventory"]
+		q_act = ""
 		for k, v in self.quests.items():  # find active quests
 			qstage = self.quests[k]["stage"][0]
 			if (0 < qstage < self.quests[k]["stage"][1]):
@@ -55,12 +56,69 @@ class AAB:
 						reqn = "item|{}|*".format(condition[1])
 						req2adv[req2adv.index(req)] = reqn
 						hasreq.append(True)
+						#q_act = "Updated"
 					else: hasreq.append(False)
 				elif condition[0] == "reward":
-					if condition[1] == "collected": hasreq.append(True)
+					if condition[1] == "collected":
+						hasreq.append(True)
+						#q_act = "Completed"
 					else: hasreq.append(False)
-			if False not in hasreq: self.quests[q]["stage"][0] += 1
-		
+			if False not in hasreq: 
+				self.quests[q]["stage"][0] += 1
+				if (self.quests[q]["stage"][0] != self.quests[q]["stage"][1] and
+					self.quests[q]["stage"][0] > 1):
+					q_act = "Updated"	
+				elif self.quests[q]["stage"][0] == self.quests[q]["stage"][1]:
+					q_act = "Completed"
+				#elif self.quests[q]["stage"][0] >= 0:
+				#	q_act = "Accepted"	
+				if q_act != "":
+					qtxt = "Quest ''{}'' {}".format(self.quests[q]["name"], q_act)
+					self.display_event_txt(qtxt)
+				
+	
+	def display_event_txt(self, txt, *args):
+		# minor problems
+		def set2none():
+			self.evt_txt_id = None
+		def display_words(index, txt_list):
+			self.cn.tag_raise(self._m("Etxt"))
+			go_nxt, start_new = True, False
+			if index == 0:
+				font = (self.fn[0], 36, "bold")
+				color = "black"
+				self._mtxt(400, 200, txt_list[index], "Etxt", font=font,
+					fill=color, anchor="center", width=750, align="center")
+			elif index < len(txt_list):
+				txt = self.cn.itemcget(self._m("Etxt"), "text")
+				txt += " {}".format(txt_list[index])
+				#txt += "{}".format(txt_list[index])
+				self.cn.itemconfigure(self._m("Etxt"), text=txt)
+			else:	
+				go_nxt = False
+				del self.evt_txt_list[0]
+				self.parent.after(2000,
+					lambda _=1: self.cn.delete(self._m("Etxt")))
+				if len(self.evt_txt_list) >= 1: 
+					start_new = True
+				else:
+					pass
+					#self.parent.after(2000, lambda _=1: set2none())
+			if go_nxt:
+				#self.evt_txt_id = self.parent.after(100, 
+				#	lambda _=1: display_words(index+1, txt_list))
+				self.evt_txt_id = self.parent.after(80, 
+					lambda _=1: display_words(index+1, txt_list))	
+			elif start_new:
+				self.parent.after(2200,
+					lambda _=1: display_words(0, self.evt_txt_list[0]))
+			else: self.evt_txt_id = None
+		txt_list = txt.split(" ")
+		#txt_list = [x for x in txt]
+		self.evt_txt_list.append(txt_list)
+		if self.evt_txt_id is None:
+			display_words(0, self.evt_txt_list[0])
+
 	
 	def give_reward(self, quest_name, *args):
 		p = self.characters["THE_PLAYER"]
@@ -87,7 +145,9 @@ class AAB:
 		#self._mbtn(60, 545, "Inventory", None)
 		self.cn.tag_bind(self._m("btn_Avatar"), "<Button-1>",
 			lambda _=1: self.start_dialog("A00"))
-	
+		#self.cn.tag_bind(self._m("map_player"), "<Button-1>",
+		#	lambda _=1: self.start_player_inv())	
+		
 	
 	def load_fonts(self, *args):
 		self.fn = [
@@ -153,8 +213,10 @@ class AAB:
 		self.in_battle = False
 		self.mapicon_t = None  # placemarker hover t
 		self.hvrt = None  # btn hover id
+		self.evt_txt_id = None  # evt text id
 		self.map_move = None
 		self.mtag = "mainUI"  # main tag of the game
+		self.evt_txt_list = []
 	
 	
 	def placemarker(self, x, y, place_name, image,
@@ -204,8 +266,12 @@ class AAB:
 					self.start_dialog(paths[0])
 					# temp 
 					#self.dialog[paths[0]]["rewards"][1] = self.scale_exp(self.dialog[paths[0]]["rewards"][1])
-					self.characters[player]["stats"][5] += self.dialog[paths[0]]["rewards"][1]
-					self.characters[player]["coin"] += self.dialog[paths[0]]["rewards"][0]
+					try: 
+						self.characters[player]["stats"][5] += self.dialogs[paths[0]]["rewards"][1]
+					except: pass
+					try:
+						self.characters[player]["coin"] += self.dialogs[paths[0]]["rewards"][0]
+					except: pass
 				elif "Defeat" in self.battle_result:
 					x = rd.randint(0, 10)
 					if x <= 5:

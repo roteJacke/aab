@@ -590,10 +590,11 @@ class Battle:
 					crit = True
 				# apply armor
 				pDMG -= (self.ebs["defense"] - (self.ebs["defense"] * (self.pbs["IA"] / 100.0)))
+				pDMG = round(pDMG, 1)
 				pDMG = 0 if pDMG < 0 else pDMG
 				new_eHP = self.eHP[0] - pDMG
 				new_eHP = new_eHP if new_eHP >= 0 else 0
-				self.eHP[0] = new_eHP  # apply to enemy 
+				self.eHP[0] = round(new_eHP, 1)  # apply to enemy 
 				self.eDODGED = False
 				if crit:
 					#display_effect("Crit")
@@ -612,10 +613,11 @@ class Battle:
 					eDMG += (eDMG * (self.ebs["Cd"] / 100.0))
 					crit = True
 				eDMG -= (self.pbs["defense"] - (self.pbs["defense"] * (self.ebs["IA"] / 100.0)))
+				eDMG = round(eDMG, 1)
 				eDMG = 0 if eDMG < 0 else eDMG
 				new_pHP = self.pHP[0] - eDMG
 				new_pHP = new_pHP if new_pHP >= 0 else 0
-				self.pHP[0] = new_pHP  # apply to enemy 
+				self.pHP[0] = round(new_pHP, 1)  # apply to enemy 
 				self.pDODGED = False
 				if crit:
 					#display_effect("Crit")
@@ -836,9 +838,16 @@ class Dialogs:
 		if ctype == "Q":  # quest
 			if action == "+1":  # elevate stage
 				self.quests[name]["stage"][0] += 1
+				# CONFLICT WITH AAB CHECK QUEST FUNCTION
+				#q_act = "Updated"
+				#qtxt = "Quest ''{}'' {}".format(self.quests[name]["name"], q_act)
+				#self.world.display_event_txt(qtxt)
 			elif action == "+A":  # q accepted
 				self.world.aktivql.append(name)
 				self.quests[name]["stage"][0] += 1
+				q_act = "Accepted"
+				qtxt = "Quest ''{}'' {}".format(self.quests[name]["name"], q_act)
+				self.world.display_event_txt(qtxt)
 			elif action == "+R":  # give reward and end quest
 				stage_now = self.quests[name]["stage"][0]
 				txt = "reward|collected"
@@ -846,6 +855,9 @@ class Dialogs:
 				x = rl.split("|")
 				if x[0] == "reward":
 					self.world.give_reward(name)
+					#q_act = "Completed"
+					#qtxt = "Quest ''{}'' {}".format(self.quests[name]["name"], q_act)
+					#self.world.display_event_txt(qtxt)
 					self.quests[name]["stage{}".format(stage_now)][1][0] = txt
 					self.world.fertigql.append(name)
 					self.world.aktivql.remove(name)
@@ -1923,11 +1935,13 @@ class Places:
 		self.extract = extract
 		self.place = place
 		self.sxy = startxy if startxy != None else (400, 375)
-		self.mlmt = mlmt if mlmt != None else (10, 270, 790, 550)  # move rect range
+		self.mlmt = mlmt if mlmt != None else (100, 270, 700, 550)  # move rect range
 		# start the ui
 		self.load_variables()
 		self.load_place_ui()
 		self.cn.bind("<Button-1>", self._interactp)
+		#self.cn.tag_bind(self.zbox.m("pPlyr"), "<Button-1>",
+		#	lambda _=1: self.world.start_player_inv())
 		
 	
 	def _interactp(self, event, *args):
@@ -1965,7 +1979,10 @@ class Places:
 			for i in id_tags:
 				txt = self.zbox.m("{}_P".format(self.place))
 				if i[:len(txt)] == txt:
-						evt = self.place_places[i]
+						try:
+							evt = self.place_places[i]
+						except:
+							evt = None
 						break
 				'''
 				try:
@@ -2055,8 +2072,10 @@ class Places:
 				self.cn.itemconfigure(tn, fill="#441122")
 		self.zbox.mimg(x, y, image, (tag, tag+"_img", "place_image"),
 			anchor="center")
-		h = int(image[-2:])  # height 99px max
-		add = (h / 2) + 8
+		#h = int(image[-2:])  # height 99px max
+		h = int(image.split("-")[1].split("x")[1])
+		ha = -10 if h >= 100 else 5
+		add = (h / 2) + ha
 		self.zbox.mtxt(x, y-add, pname, (tag, tag+"_txt", "place_image"),
 			(self.fn[0], 12), "center", fill="#441122")
 		#tagn = self.zbox.m(tag+"_img")
@@ -2228,8 +2247,8 @@ class Quests:
 			x = 100
 			self.zbox.mimg(575, x+(i*33), ci, (tag0, tag0+"_img", "akitem"))
 			self.zbox.mtxt(582, x+5+(i*33), self.quests[qname]["name"], (tag0, "akitem"))
-			self.cn.tag_bind(tag, "<Enter>", lambda _=1, t=tag0: qhover(t))
-			self.cn.tag_bind(tag, "<Leave>", lambda _=1, t=tag0: qhover(t, 0))
+			#self.cn.tag_bind(tag, "<Enter>", lambda _=1, t=tag0: qhover(t))
+			#self.cn.tag_bind(tag, "<Leave>", lambda _=1, t=tag0: qhover(t, 0))
 			self.cn.tag_bind(tag, "<Button-1>", 
 				lambda _=1, n=qname: self.display_qinfo(n))
 			inum += 1
@@ -2265,8 +2284,8 @@ class Quests:
 			x = 327
 			self.zbox.mimg(575, x+(i*33), ci, (tag0, tag0+"_img", "fgitem"))
 			self.zbox.mtxt(582, x+5+(i*33), self.quests[qname]["name"], (tag0, "fgitem"))
-			self.cn.tag_bind(tag, "<Enter>", lambda _=1, t=tag0: qhover(t))
-			self.cn.tag_bind(tag, "<Leave>", lambda _=1, t=tag0: qhover(t, 0))
+			#self.cn.tag_bind(tag, "<Enter>", lambda _=1, t=tag0: qhover(t))
+			#self.cn.tag_bind(tag, "<Leave>", lambda _=1, t=tag0: qhover(t, 0))
 			self.cn.tag_bind(tag, "<Button-1>", 
 				lambda _=1, n=qname: self.display_qinfo(n))
 			jnum += 1
@@ -2334,6 +2353,18 @@ class Quests:
 		
 	def display_qinfo(self, qinfo, *args):
 		self.cn.delete(self.zbox.m("rwd_item"))
+		ci = "dtxt_choice-190x30"
+		ci2 = "dtxt_choiceO-190x30"
+		tag = "qitem_{}".format(qinfo)
+		t = self.zbox.m(tag+"_img")
+		for i in self.aktivql:
+			t1 = self.zbox.m("qitem_"+i+"_img")
+			self.cn.itemconfigure(t1, image=self.rsc[ci])
+		for i in self.fertigql:
+			t1 = self.zbox.m("qitem_"+i+"_img")
+			self.cn.itemconfigure(t1, image=self.rsc[ci])	
+		self.cn.itemconfigure(t, image=self.rsc[ci2])
+		
 		qdata = self.quests[qinfo]
 		qtitle = qdata["name"]
 		qstage = qdata["stage"][0]
