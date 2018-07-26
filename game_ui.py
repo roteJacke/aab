@@ -720,12 +720,16 @@ class Dialogs:
 		if self.dialog_bg is not None:
 			self.zbox.mimg(0, 0, self.dialog_bg)
 		self.zbox.mimg(20, 50, "dtxt_bg-760x485")
-		self.zbox.mimg(30, 61, "dtxt_txtbg-530x465")
+		self.zbox.mrect(20, 50, 760, 485, fill="white", width=3)
+		#self.zbox.mimg(30, 61, "dtxt_txtbg-530x465")
+		self.zbox.mrect(30, 61, 530, 465, fill="white", width=1)
+		#self.zbox.mrect(30+210, 61, 530, 465, fill="white", width=1)
 		self.zbox.mimg(570, 61, self.dialog_image)
-		self.zbox.mimg(570, 271, "dtxt_choices-200x255")
-		self.zbox.mtxt(40, 76, self.dialogdata["text"][0],  # title
-			font=(self.fn[0], self.fs[1], "bold"))
-		self.zbox.mtxt(40, 106, self.dialogdata["text"][1], width=510)  # text
+		#self.zbox.mimg(570, 271, "dtxt_choices-200x255")
+		self.zbox.mrect(570, 271, 200, 255, fill="white", width=1)
+		self.zbox.mtxt(39, 66, self.dialogdata["text"][0],  # title
+			font=(self.fn[0], 13, "bold"))
+		self.zbox.mtxt(37, 106, self.dialogdata["text"][1], width=520)  # text
 		ci = "dtxt_choice-190x30"
 		ci2 = "dtxt_choiceO-190x30"
 		def dhover(tag, mode=1, *args):
@@ -734,32 +738,38 @@ class Dialogs:
 				self.parent.after_cancel(self.dhvr_t)
 				self.dhvr_t = None
 			if mode == 1:
+				#self.dhvr_t = self.parent.after(25,
+				#	lambda _=1: self.cn.itemconfigure(t, image=self.rsc[ci2]))
 				self.dhvr_t = self.parent.after(25,
-					lambda _=1: self.cn.itemconfigure(t, image=self.rsc[ci2]))
-			else: self.cn.itemconfigure(t, image=self.rsc[ci])
-		self.tdl = self._check_qreq(copy.deepcopy(self.dialogdata["choices"]))
+					lambda _=1: self.cn.itemconfigure(t, width=2))	
+			else: self.cn.itemconfigure(t, width=1)
+		#self.tdl = self._check_qreq(copy.deepcopy(self.dialogdata["choices"]))
+		self.tdl = self.world.check_event_conditions(self.dialogdata["choices"])
 		for i in range(len(self.tdl)):
 			c = self.tdl[i]
-			tag0 = "choice_{}".format(c[0])
+			tag0 = "choice_{}".format(c[2])
 			tag = self.zbox.m(tag0)
-			self.zbox.mimg(575, 281+(i*33), ci, (tag0, tag0+"_img"))
-			self.zbox.mtxt(582, 286+(i*33), c[0], tag0)
+			#self.zbox.mimg(575, 281+(i*33), ci, (tag0, tag0+"_img"))
+			#self.zbox.mrect(575-540, 281+(i*33), 190, 30, tags=(tag0, tag0+"_img"), fill="white", width=1)
+			self.zbox.mrect(575, 281+(i*33), 190, 30, tags=(tag0, tag0+"_img"), fill="white", width=1)
+			self.zbox.mtxt(582, 286+(i*33), c[2], tag0)
+			#self.zbox.mtxt(582-540, 286+(i*33), c[0], tag0)
 			self.cn.tag_bind(tag, "<Enter>", lambda _=1, t=tag0: dhover(t))
 			self.cn.tag_bind(tag, "<Leave>", lambda _=1, t=tag0: dhover(t, 0))
 			if c[1] is None: continue  # next iteration
 			cdata = c[1].split("|")
 			x = cdata[1]
-			if cdata[0] == "plc":  # place
-				command = lambda _, n=x, z=c[3], i=i: self._go_plc(i, n, z)
-			elif cdata[0] == "dlg":  # dialog
-				command = lambda _, n=x, i=i: self._go_dlg(i, n)	
-			elif cdata[0] == "str":  # store, trade between 2 characters
-				command = lambda _, n=x, i=i: self._go_str(i, n)
+			if cdata[0] == "place":  # place
+				command = lambda _, n=x, z=c, i=i: self._go_plc(i, n, z)
+			elif cdata[0] == "dialg":  # dialog
+				command = lambda _, n=x, i=i, z=c: self._go_dlg(i, n, z)	
+			elif cdata[0] == "store":  # store, trade between 2 characters
+				command = lambda _, n=x, i=i, z=c: self._go_str(i, n, z)
 			elif cdata[0] == "box":  # lootbox
-				command = lambda _, n=x, i=i: self._go_box(i, n)
-			elif cdata[0] == "btl":  # battle
-				command = lambda _, n=x, i=i: self._go_btl(i, n)	
-			elif cdata[0] == "ext":
+				command = lambda _, n=x, i=i, z=c: self._go_box(i, n, z)
+			elif cdata[0] == "battl":  # battle
+				command = lambda _, n=x, i=i, z=c: self._go_btl(i, n, z)	
+			elif cdata[0] == "leave":
 				command = lambda _=1, i=i: self._leave_dlg(i)	
 			self.cn.tag_bind(tag, "<Button-1>", command)
 		self.zbox.raise_ctags()	
@@ -768,9 +778,15 @@ class Dialogs:
 	def load_variables(self, *args):
 		self.dlist = self.world.dialogs
 		self.dialogdata = self.dlist[self.dialog_id]
-		self.dialog_bg = self.dialogdata["bg_image"]
-		self.dialog_image = self.dialogdata["image"]
-		if self.dialogdata["image"] == None:
+		try:
+			self.dialog_bg = self.dialogdata["bg_image"]
+		except:
+			self.dialog_bg = None
+		try:
+			self.dialog_image = self.dialogdata["image"]
+			if self.dialogdata["image"] == None:
+				self.dialog_image = "dtxt_image_roadtravel"
+		except:
 			self.dialog_image = "dtxt_image_roadtravel"
 		self.mtag = "dialogUI_{}".format(self.dialog_id)
 		self.pdata = self.world.characters["THE_PLAYER"]
@@ -781,41 +797,47 @@ class Dialogs:
 		self.quests = self.world.quests
 		
 
-	def _go_dlg(self, id, dialog_id, *args):
+	def _go_dlg(self, id, dialog_id, after_event, *args):
 		if not self.world.aktiv_caUI:
 			#self.hoverstats_fade()
-			self._special_event(id)
+			#self._special_event(id)
+			self.world.check_event_events(after_event)
 			self.cn.delete(self.mtag)
 			self.world.start_dialog(dialog_id)
 	
 	
-	def _go_btl(self, id, battle_data, *args):
+	def _go_btl(self, id, battle_data, after_event, *args):
 		if not self.world.aktiv_caUI:
+			self.cn.delete(self.mtag)
 			a = battle_data.split("=")
-			self._special_event(id)
+			#self._special_event(id)
 			enemy = a[0]
 			paths = a[1].split("::")
+			self.world.check_event_events(after_event)
 			#self.go_place(self.dialogdata["location"])
 			self.world.start_battle(enemy, paths)
 	
 	
-	def _go_plc(self, id, evt, xy=None, *args):
+	def _go_plc(self, id, evt, after_event, *args):
 		if not self.world.aktiv_caUI:
 			# id conflicts with xy
-			self._special_event(id)
+			#self._special_event(id)
+			self.world.check_event_events(after_event)
 			self.cn.delete(self.mtag)
 			self.world.start_place(evt, startxy=xy)
 			
 	
-	def _go_str(self, id, merchant, *args):
+	def _go_str(self, id, merchant, after_event, *args):
 		if not self.world.aktiv_caUI:
-			self._special_event(id)
+			#self._special_event(id)
+			self.world.check_event_events(after_event)
 			self.world.start_store(merchant)
 			
 			
-	def _go_box(self, id, container, *args):
+	def _go_box(self, id, container, after_event, *args):
 		if not self.world.aktiv_caUI:
-			self._special_event(id)
+			#self._special_event(id)
+			self.world.check_event_events(after_event)
 			bg = self.dialogdata["bg_image"]
 			self.world.start_tradebox(container, bg=bg)
 
@@ -1934,8 +1956,17 @@ class Places:
 		self.cn = world.cn
 		self.extract = extract
 		self.place = place
-		self.sxy = startxy if startxy != None else (400, 375)
-		self.mlmt = mlmt if mlmt != None else (100, 270, 700, 550)  # move rect range
+		self.sxy = self.world.world_places[place]["entry_coords"]
+		if startxy != None:
+			self.sxy = startxy
+		self.mlmt = self.world.world_places[place]["walk_range"]
+		if self.mlmt == "default":
+			if self.world.world_places[self.place]["type"][0] == "outdoors":
+				self.mlmt = (35, 350, 765, 535)
+			else:
+				self.mlmt = (75, 285, 725, 430)
+		#self.sxy = startxy if startxy != None else (400, 375)
+		#self.mlmt = mlmt if mlmt != None else (100, 270, 700, 550)  # move rect range
 		# start the ui
 		self.load_variables()
 		self.load_place_ui()
@@ -1954,7 +1985,7 @@ class Places:
 			# calculate variables
 			coords = self.cn.coords(self.zbox.m("pPlyr"))
 			px, py = coords[0], coords[1]
-			lx, ly = event.x, event.y - 35
+			lx, ly = event.x, event.y - 80
 			'''
 			if (lx < self.mlmt[0] or lx >= self.mlmt[2] or
 				ly < self.mlmt[1] or ly >= self.mlmt[3]):
@@ -1964,15 +1995,20 @@ class Places:
 			elif lx > self.mlmt[2]: lx = self.mlmt[2]
 			if ly < self.mlmt[1]: ly = self.mlmt[1]
 			elif ly > self.mlmt[3]: ly = self.mlmt[3]
+			pimg = self.pdata["place_image"]
+			speed = 4.25
+			if self.world.world_places[self.place]["type"][0] != "outdoors":
+				pimg = self.pdata["place_indoor_image"]
+				speed = 6.19
 			if lx < px:
 				self.cn.itemconfigure(self.zbox.m("pPlyr"),
-					image=self.rsc["{}F".format(self.pdata["place_image"])])
+					image=self.rsc["{}F".format(pimg)])
 			else:
 				self.cn.itemconfigure(self.zbox.m("pPlyr"),
-					image=self.rsc[self.pdata["place_image"]])
+					image=self.rsc[pimg])
 			x, y = lx-px, ly-py
 			dist = math.sqrt(abs(x)**2 + abs(y)**2)
-			steps = dist / 4.25  # player speed 5.0 max
+			steps = dist / speed  # player speed 5.0 max
 			ax = x / steps
 			ay = y / steps
 			evt = None
@@ -2003,49 +2039,70 @@ class Places:
 				self._move2locp(x_add, y_add, steps, evt))
 		elif steps < 0:
 			self.place_move = None
+			pimg = self.pdata["place_image"]
+			if self.world.world_places[self.place]["type"][0] != "outdoors":
+				pimg = self.pdata["place_indoor_image"]
 			self.cn.itemconfigure(self.zbox.m("pPlyr"),
-				image=self.rsc[self.pdata["place_image"]])
+				image=self.rsc[pimg])
 			if evt is not None:
 				evt()
 	
 	
 	def load_place_ui(self, *args):
-		self.zbox.mimg(0, 0, self.placedata["image"], "place_image")
+		#self.zbox.mimg(0, 0, self.placedata["image"], "place_image")
+		if self.world.world_places[self.place]["type"][0] == "outdoors":
+			self.zbox.mimg(0, 0, self.world.world_places[self.place]["type"][1], "place_image")
+			self.zbox.mimg(0, 330, self.world.world_places[self.place]["type"][2], "place_image")
+		else:
+			self.zbox.mrect(0, 0, 800, 600, fill="#331122", tags="place_image")
+			for i in range(4):
+				x = 50 + (i * 175)
+				self.zbox.mimg(x, 100, self.world.world_places[self.place]["type"][1], "place_image")
+				self.zbox.mimg(x, 350, self.world.world_places[self.place]["type"][2], "place_image")
 		try:
 			if self.placedata["leave_btn"]:
 				self.zbox.mbtn(717, 548, "Leave", self._leave_place,
 					w=80, h=48, font=(self.fn[0], 17), txty_change=8)
 		except: pass  # no leave_btn
 		e = self.placedata["events"]
-		for evt in e:
-			tag0 = "{}_P{}".format(self.place, evt[2])
+		e1 = self.world.check_event_conditions(e)
+		xc = 0
+		for evt in e1:
+			tag0 = "{}_P{}-{}".format(self.place, evt[2], xc)
 			tag = self.zbox.m(tag0)
-			if evt[0] != None: continue  # next iteration
+			xc += 1
 			if evt[1] != None:  # event
 				act = evt[1].split("|")
-				if act[0] == "plc":  # place
-					command = lambda n=act[1]: self._go_plc(n)
-				elif act[0] == "dlg":  # dialog
-					command = lambda n=act[1]: self._go_dlg(n)
-				elif act[0] == "str":  # store, trade between 2 characters
-					command = lambda n=act[1]: self._go_str(n)
-				elif act[0] == "box":  # lootbox
-					command = lambda n=act[1]: self._go_box(n)	
+				if act[0] == "place":  # place
+					command = lambda n=act[1], e=evt: self._go_plc(n, e)
+				elif act[0] == "dialg":  # dialog
+					command = lambda n=act[1], e=evt: self._go_dlg(n, e)
+				elif act[0] == "store":  # store, trade between 2 characters
+					command = lambda n=act[1], e=evt: self._go_str(n, e)
+				elif act[0] == "chest":  # lootbox
+					command = lambda n=act[1], e=evt: self._go_box(n, e)	
+				elif act[0] == "leave":  # lootbox
+					command = lambda _=1: self._leave_place()	
 				self.place_places[tag] = command
 				#self.cn.tag_bind(tag, "<Button-1>", command)
-			# ie: "450-200|map_lurco-50x50"
-			img_data = evt[3].split("|")
-			coords = [int(x) for x in img_data[0].split("-")]
-			img = img_data[1]
-			self.place_place(coords[0], coords[1], evt[2], img, tag0)
-		self.zbox.mimg(self.sxy[0], self.sxy[1], self.pdata["place_image"],
+			# ie: "map_lurco-50x50|450, 200"
+			img_data = evt[2].split("|")
+			coords = [int(x) for x in img_data[1].split(",")]
+			img = img_data[0]
+			self.place_place(coords[0], coords[1], "", img, tag0, anchor="nw")
+		pimg = self.pdata["place_image"]
+		if self.world.world_places[self.place]["type"][0] != "outdoors":
+			pimg = self.pdata["place_indoor_image"]
+		self.zbox.mimg(self.sxy[0], self.sxy[1], pimg,
 			"pPlyr", "center")	
 		self.zbox.raise_ctags()
+		self.cn.tag_raise(self.zbox.m("raise_tag"))
 		self._reset_aktivui()
 		
 	
 	def load_variables(self, *args):
-		self.place_list = self.world.map[self.world.current_region]["places"]
+		#self.place_list = self.world.map[self.world.current_region]["places"]
+		self.place_list = self.world.world_places
 		self.placedata = self.place_list[self.place]
 		self.rsc = self.world.rsc
 		self.mtag = "placeUI_{}".format(self.placedata["name"])
@@ -2059,7 +2116,7 @@ class Places:
 		self.aktiv_ui = False
 	
 	
-	def place_place(self, x, y, pname, image, tag=None, *args):
+	def place_place(self, x, y, pname, image, tag=None, anchor="center", *args):
 		def phover(mode="enter", *args):
 			tn = self.zbox.m(tag+"_txt")
 			if self.phvr_t != None:
@@ -2070,21 +2127,23 @@ class Places:
 					lambda _=1: self.cn.itemconfigure(tn, fill="yellow"))
 			else:
 				self.cn.itemconfigure(tn, fill="#441122")
-		self.zbox.mimg(x, y, image, (tag, tag+"_img", "place_image"),
-			anchor="center")
+		e = "no_raise"
+		if y >= 450: e = "raise_tag"
+		self.zbox.mimg(x, y, image, (tag, tag+"_img", "place_image", e),
+			anchor=anchor)
 		#h = int(image[-2:])  # height 99px max
-		h = int(image.split("-")[1].split("x")[1])
-		ha = -10 if h >= 100 else 5
-		add = (h / 2) + ha
-		self.zbox.mtxt(x, y-add, pname, (tag, tag+"_txt", "place_image"),
-			(self.fn[0], 12), "center", fill="#441122")
+		#h = int(image.split("-")[1].split("x")[1])
+		#ha = -10 if h >= 100 else 5
+		#add = (h / 2) + ha
+		#self.zbox.mtxt(x, y-add, pname, (tag, tag+"_txt", "place_image"),
+		#	(self.fn[0], 12), "center", fill="#441122")
 		#tagn = self.zbox.m(tag+"_img")
-		tagn = self.zbox.m(tag)
-		self.cn.tag_bind(tagn, "<Enter>", lambda _=1: phover())
-		self.cn.tag_bind(tagn, "<Leave>", lambda _=1: phover("l"))
+		#tagn = self.zbox.m(tag)
+		#self.cn.tag_bind(tagn, "<Enter>", lambda _=1: phover())
+		#self.cn.tag_bind(tagn, "<Leave>", lambda _=1: phover("l"))
 	
 	
-	def _go_box(self, container, *args):
+	def _go_box(self, container, after_event, *args):
 		def lv_box(s=0, *args):
 			if s == 0:
 				self.aktiv_ui = True
@@ -2092,23 +2151,33 @@ class Places:
 			else:
 				self.aktiv_ui = False
 		if not self.world.aktiv_caUI:
+			self.world.check_event_events(after_event)
 			self.aktiv_ui = True
-			bg = self.placedata["image"]
-			self.world.start_tradebox(container, extract=lv_box, bg=bg)	
+			#bg = self.placedata["image"]
+			self.world.start_tradebox(container, extract=lv_box)	
 	
 	
-	def _go_dlg(self, dialog_id, *args):
+	def _go_dlg(self, dialog_id, after_event, *args):
 		if not self.world.aktiv_caUI:
 			#self.hoverstats_fade()
-			self.cn.delete(self.mtag)
+			#self.cn.delete(self.mtag)
+			self.world.check_event_events(after_event)
 			self.world.start_dialog(dialog_id)
 	
 	
-	def _go_plc(self, evt, *args):
-		pass
+	def _go_plc(self, evt, after_event, *args):
+		self._leave_place()
+		startxy = None
+		edata = evt.split("*")
+		evt_name = edata[0]
+		if len(edata) > 1:
+			a = edata[1].split(",")
+			startxy = (int(a[0]), int(a[1]))
+		self.world.check_event_events(after_event)	
+		self.world.start_place(evt_name, startxy=startxy)
 	
 	
-	def _go_str(self, merchant, *args):
+	def _go_str(self, merchant, after_event, *args):
 		#def exit_str(*args):  # redundant
 		#	pass
 		def lv_str(s=0, *args):
@@ -2120,8 +2189,8 @@ class Places:
 		if not self.world.aktiv_caUI:
 			#self.zbox.mimg(0, 0, self.placedata["image"], "str_bg")  # redundant
 			self.aktiv_ui = True
-			self.world.start_store(merchant, bg=self.placedata["image"],
-				extract=lv_str)
+			self.world.check_event_events(after_event)
+			self.world.start_store(merchant, extract=lv_str)
 	
 	
 	def _leave_place(self, *args):

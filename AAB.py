@@ -29,6 +29,138 @@ class AAB:
 		self.load_game_data()
 		self.load_basic_ui()
 		# test functions
+		#self.check_condition("Q|mq01")
+		#self.check_event_conditions([(["Qactive|mq01", "G+|100"], "place|cabin_indoors", "bw-hdoor0|270,253")])
+	
+
+	def check_event_events(self, event_list, *args):
+		# checks for events to be executed
+		if len(event_list) < 4: return  # No events
+		elif (event_list[3] == None or
+			event_list[3] == "" or
+			event_list[3] == []):
+			return
+		data = event_list[3]
+		if isinstance(data, str):
+			self.check_event(data)
+		else:
+			for i in data:
+				self.check_event(i)
+	
+	
+	def check_event(self, event, *args):
+		'''
+		Qstage+|qname
+		Qstart|qname
+		Qcomplete|qname automatically give reward
+		I+|item*n
+		I-|item*n
+		G+|int
+		HP+|int
+		Exp+|int
+		'''
+		f, p = event.split("|")
+		player_stats = self.characters["THE_PLAYER"]
+		current_stage = max_stage = None 
+		if f[0] == "Q":
+			# using current_stage = max_stage not working
+			current_stage = self.quests[p]["stage"][0] 
+			max_stage = self.quests[p]["stage"][1]
+		if f == "Qcomplete": 
+			self.quests[p]["stage"][0] = max_stage
+			txt = "''{}'' Completed".format(self.quests[p]["name"])
+			self.display_event_txt(txt)
+			self.give_reward(p)
+			self.fertigql.append(p)
+			self.aktivql.remove(p)
+		elif f == "Qstage+":
+			self.quests[p]["stage"][0] += 1
+			txt = "''{}'' Updated".format(self.quests[p]["name"])
+			self.display_event_txt(txt)
+		elif f == "Qstart":
+			self.quests[p]["stage"][0] = 1
+			self.aktivql.append(p)
+			txt = "''{}'' Started".format(self.quests[p]["name"])
+			self.display_event_txt(txt)
+		elif f[0] == "I":
+			n = 1
+			pdata = p.split("*")
+			if len(pdata) > 1: n = pdata[1]
+			if f[1] == "+": player_stats["inventory"] += [pdata[0]] * n
+			else:
+				for i in range(n):
+					player_stats["inventory"].remove(pdata[0])
+		elif f == "G+": player_stats["coin"] += int(p)
+		elif f == "HP+":
+			m = player_stats["stats"][0][0] + int(p)
+			m = 1 if m < 1 else m
+			if m > player_stats["stats"][0][1]:
+				m = player_stats["stats"][0][1]
+			player_stats["stats"][0][0] = m
+		elif f == "Exp+": player_stats["stats"][5] += int(p)
+		#pass
+		# apply to other changes to dialog
+		# modify dialog for default values
+		# apply to store
+		# do first quest
+		
+		
+	def check_event_conditions(self, event_data, *args):
+		# checks conditions of data in events
+		revised_event_data = []
+		for edata in event_data:
+			if (edata[0] is None or 
+				edata[0] == "" or 
+				edata[0] == []):
+				revised_event_data.append(edata)
+				continue
+			condition_met = False
+			if isinstance(edata[0], str):
+				condition_met = self.check_condition(edata[0])
+			else:
+				clist = list(map(self.check_condition, edata[0]))
+				if False not in clist: condition_met = True
+			if condition_met: revised_event_data.append(edata)
+		return revised_event_data
+	
+	
+	def check_condition(self, condition, *args):
+		f, p = condition.split("|")
+		player_stats = self.characters["THE_PLAYER"]
+		current_stage = max_stage = None 
+		if f[0] == "Q":
+			current_stage = self.quests[p]["stage"][0] 
+			max_stage = self.quests[p]["stage"][1]
+		if f == "Qactive":
+			if current_stage > 0 and current_stage < max_stage: return True
+		elif f == "Qcompleted":
+			if current_stage == max_stage: return True
+		elif f == "Qdormant":
+			if current_stage == 0: return True
+		elif f[:-1] == "Qstage":
+			if current_stage == int(f[-1]): return True
+		elif f == "Qstarted":
+			if current_stage >= 1: return True
+		elif f == "G+":
+			coin = player_stats["coin"]
+			if coin >= int(p): return True
+		elif f == "L+":
+			lvl = player_stats["stats"][5] // 1000
+			if lvl >= int(p): return True
+		elif f == "Ihas":
+			inv = player_stats["inventory"]
+			n = p.split("*")
+			req = 1 if len(n) == 1 else int(n[1])
+			num = inv.count(n[0])
+			if num >= req: return True
+		return False
+		
+
+	def check_events(self, event_list, *args):
+		'''
+		
+		'''
+		pass
 	
 	
 	def check_quests(self, *args):
@@ -75,7 +207,7 @@ class AAB:
 				if q_act != "":
 					qtxt = "Quest ''{}'' {}".format(self.quests[q]["name"], q_act)
 					self.display_event_txt(qtxt)
-				
+	
 	
 	def display_event_txt(self, txt, *args):
 		# minor problems
@@ -129,9 +261,10 @@ class AAB:
 		
 		
 	def load_basic_ui(self, *args):
-		self.load_map(self.current_region)
+		#self.load_map(self.current_region)
+		self.load_map()
 		# create player image on map and set movement
-		self._mimg(500, 195, self.characters["THE_PLAYER"]["map_image"],
+		self._mimg(280, 370, self.characters["THE_PLAYER"]["map_image"],
 			"map_player", "center")	
 		self.cn.bind("<Button-1>", self._interact)
 		self._mimg(2, 547, "chr_ava-50x50", "btn_Avatar")
@@ -170,7 +303,9 @@ class AAB:
 		self.containers = game_data.containers
 		self.dialogs = game_dialogs.dialogs
 		self.items = game_data.items
-		self.map = game_data.map
+		#self.map = game_data.map
+		self.map = game_data.map_markers
+		self.world_places = game_data.world_places
 		self.map_places = {}
 		self.perks = game_data.perks
 		self.quests = game_data.quests
@@ -185,13 +320,23 @@ class AAB:
 			"mace": [60, 50, 10, 2.5],
 		}
 		
-	
+	'''
 	def load_map(self, map, *args):
 		self._mimg(0, 0, self.map[map]["image"], ("map_obj"))
 		for k, v in self.map[map]["places"].items():
 			n = self.map[map]["places"][k]
 			self.placemarker(n["coords"][0], n["coords"][1],
 				n["name"], n["map_image"],
+				lambda _=1, k=k: self.start_place(k), k)
+	'''
+
+	def load_map(self, *args):
+		#self._mimg(0, 0, self.map[map]["image"], ("map_obj"))
+		self._mimg(0, 0, "map_badlands", ("map_obj"))
+		for k, v in self.map.items():
+			n = self.map[k]
+			self.placemarker(n["coords"][0], n["coords"][1],
+				n["name"], n["image"],
 				lambda _=1, k=k: self.start_place(k), k)
 	
 	
@@ -204,7 +349,11 @@ class AAB:
 		self.rsc = {}
 		for gif in range(len(glist)):
 			self.rsc[glist[gif]] = tk.PhotoImage(file = llist[gif])
-	
+		glist2 = [data[:-4] for data in fdata if data[-4:] == ".png"]  # Gif
+		llist2 = [floc + data for data in fdata if data[-4:] == ".png"]  # path	
+		for gif2 in range(len(glist2)):
+			self.rsc[glist2[gif2]] = tk.PhotoImage(file = llist2[gif2])
+			
 	
 	def load_variables(self, *args):
 		self.aktiv_caUI = False
@@ -235,13 +384,13 @@ class AAB:
 			else:
 				self.cn.itemconfigure(tn, image=self.rsc[image])
 		h = int(image[-2:])  # height 99px max
-		add = (h / 2) + 12
+		add = (h / 2) + 10
 		self._mimg(x, y, image, ("map_obj", tag, tag+"_image"), "center")
 		self._mtxt(x+x_add, y-add, place_name, ("map_obj", tag, tag+"_txt"),
 			anchor="center", font=(self.fn[0], self.fs[1]), fill="#441122")
 		self.map_places[self._m(tag)] = evts
-		self.cn.tag_bind(self._m(tag), "<Enter>", lambda _=1: _phover())
-		self.cn.tag_bind(self._m(tag), "<Leave>", lambda _=1: _phover("l"))
+		#self.cn.tag_bind(self._m(tag), "<Enter>", lambda _=1: _phover())
+		#self.cn.tag_bind(self._m(tag), "<Leave>", lambda _=1: _phover("l"))
 	
 	
 	def raise_ctags(self, *args):
@@ -277,7 +426,7 @@ class AAB:
 					if x <= 5:
 						self.start_dialog(paths[2])
 					else:
-						self._mimg(0, 0, "aBg1")
+						#self._mimg(0, 0, "aBg1")
 						self.start_dialog(paths[1])
 				elif "Flee" in self.battle_result:
 					self.start_dialog(paths[2])
@@ -319,7 +468,7 @@ class AAB:
 			try: self.go_place.aktiv_ui = True
 			except: pass
 			self._uistatus("aktiv")
-			self.check_quests()
+			#self.check_quests()
 			self.go_dialog = game_ui.Dialogs(self, dialog_id, end_dialog)
 	
 	
@@ -366,12 +515,12 @@ class AAB:
 			self.go_perks = game_ui.Perks(self, self.characters[party1], end_perkbox, perksg1)
 	
 	
-	def start_place(self, place, extract=None, startxy=None, *args):
+	def start_place(self, place, extract=None, startxy=None, mlmt=None, *args):
 		def end_place():
 			self._uistatus("inaktiv")
 			self.cn.bind("<Button-1>", self._interact)
 			if extract is not None: extract()
-		self.check_quests()	
+		#self.check_quests()	
 		self._uistatus("aktiv")
 		self.go_place = game_ui.Places(self, place, end_place, startxy)
 	
@@ -424,7 +573,7 @@ class AAB:
 				extract()
 		if not self.aktiv_caUI:
 			#self.disable_cm()
-			self.check_quests()
+			#self.check_quests()
 			if bg is not None: self._mimg(0, 0, bg, "str_bg")
 			self.go_store = game_ui.Stores(self, merchant, end_store)
 	
@@ -439,7 +588,7 @@ class AAB:
 				extract()
 		if not self.aktiv_caUI:
 			#self.disable_cm()
-			self.check_quests()
+			#self.check_quests()
 			if bg is not None: self._mimg(0, 0, bg, "trd_bg")
 			self.go_tradebox = game_ui.Tradebox(self, container, end_tradebox)
 	

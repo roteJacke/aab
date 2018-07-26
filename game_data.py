@@ -2,8 +2,8 @@ characters = {
 	"THE_PLAYER": {
 		"name": "Lurco",
 		"equipped": [None] * 6,  # armor, weapon
-		"inventory": ["copper_sword"],
-		"coin": 1000,
+		"inventory": ["copper_sword", "hpot0"],
+		"coin": 10000,
 		"stats": [
 			[3, 10], 1, 15, 0, 1, 12345,  # HP AP Dodge, D, A, EXP
 			60, 15, 25, 25, 0  # HC IA CC CD BD
@@ -18,7 +18,10 @@ characters = {
 		"avatar": "czlurco_ava-100x105",
 		"image": "player_img",
 		"map_image": "map_lurco-35x35",
-		"place_image": "czlurco_place",
+		#"place_image": "czlurco_place",
+		"place_image": "bw-player0",
+		"place_indoor_image": "bw-player0I",
+		#"place_image": "bw-woman0",
 		"location": None,
 	},
 	# NPCs -------------------------------------
@@ -54,10 +57,16 @@ containers = {
 	"hausbox": {
 		"name": "Chest",
 		"inventory": ["books", "books", "books", "iron_sword", "iron_sword"],
-		"coin": 1,
+		"coin": 9000,
 		"avatar": "czchest_ava-100x105",
 		#"box_image": "box3-310x337",
 	},
+	"cabin_chest": {
+		"name": "Chest",
+		"inventory": ["books"],
+		"coin": 9000,
+		"avatar": "czchest_ava-100x105",
+	}
 }
 items = {
 	# armor ------------------------------------
@@ -193,6 +202,65 @@ perks = {
 		"img": "perk_fasterreflex-40x40",
 	},
 }
+map_markers = {
+	"cabin": {
+		"name": "Cabin",
+		"image": "bw-cabin-35x35",
+		"coords": (220, 400),
+		"condition": None,
+		#"event": "place|cabin",  # future
+		#"place": "cabin", redundant as key is the parameter
+	},
+	"village": {
+		"name": "Village",
+		"image": "bw-village-50x50",
+		"coords": (425, 250),
+		"condition": None,
+		#"event": "place|cabin",  # future
+		#"place": "cabin", redundant as key is the parameter
+	},
+}
+world_places = {
+	"cabin": {
+		"name": "Cabin",
+		"type": ["outdoors", "bw-bg_top0", "bw-bg_bot0"],
+		"entry_coords": (625, 317),
+		"walk_range": "default",
+		"events": [
+			(None, None, "bw-house0|250,170"),
+			(None, "place|cabin_indoors", "bw-hdoor0|270,253"),
+			(None, "dialg|patience_cabin-descr", "bw-woman0|180,250"),
+			(None, "leave|", "bw-gate0|564,213"),
+		],
+	},
+	"cabin_indoors": {
+		"name": "Cabin",
+		"type": ["indoors", "bw-wall0", "bw-floor0"],
+		"entry_coords": (480, 285),
+		"walk_range": "default",
+		"events": [
+			(None, "place|cabin*312,320", "bw-door0|412,157"),
+			(None, None, "bw-bed0|60, 267"),
+			(None, None, "bw-closet0|275, 180"),
+			(None, "chest|cabin_chest", "bw-chest0|630,450"),
+		],
+	},
+	"village": {
+		"name": "Village",
+		"type": ["outdoors", "bw-bg_top0", "bw-bg_bot0"],
+		"entry_coords": (625, 317),
+		"walk_range": "default",
+		"events": [
+			# Tavern
+			(None, None, "bw-house0|330,170"),
+			(None, "store|ferrec", "bw-hdoor0|350,253"),
+			# Empty House
+			(None, None, "bw-house0|705,170"),
+			(None, "dialg|village-empty_house", "bw-hdoor0|725,253"),
+			(None, "leave|", "bw-gate0|564,213"),  # Gate
+		],
+	},
+}
 map = {
 	"Badlands": {  # region
 		"places": {
@@ -221,6 +289,17 @@ map = {
 }
 # Only one (1) requirement to adv stage unless items
 quests = {  # Quest added to fertigql if reward is given
+	"squest0.0": {
+		"name": "Bring Her A Tonic",
+		"stage": [0, 2],
+		"stage1": [
+			"    She wants a tonic.",
+		],
+		"stage2": [
+			"    I got her a tonic.",
+		],
+		"reward": [100, 1, []],
+	},
 	# Main Quests
 	"A00": {
 		"name": "The Beginning",

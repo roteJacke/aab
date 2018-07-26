@@ -1,4 +1,55 @@
 dialogs = {
+	"patience_cabin-descr": {
+		"text": [ "",
+			"    Your relatively hot girlfriend. She's a redhead."
+		],
+		"choices": [
+			("Qdormant|squest0.0", "dialg|patience_cabin-drmnt-squest0.0", "''Need anything?''"),
+			(["Qactive|squest0.0", "Ihas|hpot0"], "dialg|patience_cabin-cmplt-squest0.0", "''I have it.''", ["Qcomplete|squest0.0", "I-|hpot0"]),
+			(None, "leave|", "Leave"),
+		],
+	},
+	"patience_cabin-drmnt-squest0.0": {
+		"text": [ "",
+			"Hey, buy me a tonic from the village."
+		],
+		"choices": [
+			(None, "dialg|patience_cabin-thanks", "''Consider it done.''", "Qstart|squest0.0"),
+			(None, "leave|", "''No.''"),
+		],
+	},
+	"patience_cabin-cmplt-squest0.0": {
+		"text": [ "",
+			"THANKS, attack starts"
+		],
+		"choices": [
+			(None, "battl|bandit0=patience_cabin-thanks::patience_cabin-thanks::patience_cabin-thanks", "Fight"),
+		],
+	},
+	"patience_cabin-thanks": {
+		"text": [ "",
+			"Thanks!"
+		],
+		"choices": [(None, "leave|", "Leave"),],
+	},
+	
+	"village-empty_house": {
+		"text": [ "The Empty House",
+			"    The door is locked.\n"
+		],
+		"choices": [
+			("G+|9", "dialg|village-empty_house1", "Try to Unlock", "Qstart|mq01"),
+			("G+|9", "leave|", "Leave"),
+		],
+	},
+	"village-empty_house1": {
+		"text": [ "The Empty House",
+			"    The door is locked.\n"
+		],
+		"choices": [
+			("G+|9", "leave|", "Leave"),
+		],
+	},
 	"mq00a": { 
 		"text": [ "A Want For A Book",
 			"    ''I want a book. Any kind of book will do. I don't have mu" \
