@@ -1,5 +1,5 @@
 # aab
-python3.6 Tkinter 2d RPG similar to Mount&amp;Blade
+python3.6 Tkinter 2d RPG similar to Mount&amp;Blade (without the battles!)
 
 It is a 2d RPG similar to Mount&Blade without the battle. The player might spend most of their time reading dialogs, like SunlessSea. The deadline of making a functional & playable game is August 14 2018.
 
