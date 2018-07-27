@@ -223,14 +223,29 @@ map_markers = {
 world_places = {
 	"cabin": {
 		"name": "Cabin",
-		"type": ["outdoors", "bw-bg_top0", "bw-bg_bot0"],
+		"type": ["outdoors", "bw-bg_top1", "bw-bg_bot1"],
 		"entry_coords": (625, 317),
 		"walk_range": "default",
 		"events": [
-			(None, None, "bw-house0|250,170"),
-			(None, "place|cabin_indoors", "bw-hdoor0|270,253"),
-			(None, "dialg|patience_cabin-descr", "bw-woman0|180,250"),
-			(None, "leave|", "bw-gate0|564,213"),
+			("Qdormant|main_quest0.0", None, "bw-house0|250,170"),
+			("Qdormant|main_quest0.0", "place|cabin_indoors", "bw-hdoor0|270,253"),
+			("Qstarted|main_quest0.0", None, "bw-house0-z|250,170"),
+			("Qdormant|main_quest0.0", "dialg|patience_cabin-descr", "bw-woman0|180,225"),
+			(None, "leave|", "bw-arrow_up|555,270"),
+		],
+	},
+	"village_tavern": {
+		"name": "Tavern",
+		"type": ["indoors", "bw-wall0", "bw-floor0"],
+		"entry_coords": (480, 285),
+		"walk_range": "default",
+		"events": [
+			(None, "place|village*312,320", "bw-door0f|432,157"),
+			(None, "place|village*312,320", "bw-door0|565,157"),
+			(None, "dialg|patience_cabin-descr", "bw-woman0|180,190"),
+			(None, None, "bw-counter|65,270"),
+			(None, None, "bw-table|80,450"),
+			(None, None, "bw-table|538,450"),
 		],
 	},
 	"cabin_indoors": {
@@ -252,12 +267,15 @@ world_places = {
 		"walk_range": "default",
 		"events": [
 			# Tavern
-			(None, None, "bw-house0|330,170"),
-			(None, "store|ferrec", "bw-hdoor0|350,253"),
+			(None, None, "bw-house0|160,170"),
+			(None, "store|ferrec", "bw-hdoor0|180,253"),
+			(None, None, "bw-house1|-50,160"),
+			(None, None, "bw-tavern|245,135"),
+			(None, "place|village_tavern", "bw-hdoor0|388,259"),
 			# Empty House
 			(None, None, "bw-house0|705,170"),
-			(None, "dialg|village-empty_house", "bw-hdoor0|725,253"),
-			(None, "leave|", "bw-gate0|564,213"),  # Gate
+			(None, "dialg|village-empty_house", "bw-hdoor0|722,253"),
+			(None, "leave|", "bw-gate0|585,213"),  # Gate
 		],
 	},
 }
@@ -289,6 +307,20 @@ map = {
 }
 # Only one (1) requirement to adv stage unless items
 quests = {  # Quest added to fertigql if reward is given
+	"main_quest0.0": {
+		"name": "The Aftermath",
+		"stage": [0, 3],
+		"stage1": [
+			"   1.",
+		],
+		"stage2": [
+			"    2.",
+		],
+		"stage3": [
+			"    completed.",
+		],
+		"reward": [100, 1, []],
+	},
 	"squest0.0": {
 		"name": "Bring Her A Tonic",
 		"stage": [0, 2],
