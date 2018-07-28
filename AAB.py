@@ -384,7 +384,7 @@ class AAB:
 			else:
 				self.cn.itemconfigure(tn, image=self.rsc[image])
 		h = int(image[-2:])  # height 99px max
-		add = (h / 2) + 10
+		add = ((h / 2) + 10) * -1
 		self._mimg(x, y, image, ("map_obj", tag, tag+"_image"), "center")
 		self._mtxt(x+x_add, y-add, place_name, ("map_obj", tag, tag+"_txt"),
 			anchor="center", font=(self.fn[0], self.fs[1]), fill="#441122")
@@ -520,7 +520,9 @@ class AAB:
 			self._uistatus("inaktiv")
 			self.cn.bind("<Button-1>", self._interact)
 			if extract is not None: extract()
-		#self.check_quests()	
+		#self.check_quests()
+		try: self.go_place._leave_place()
+		except: pass
 		self._uistatus("aktiv")
 		self.go_place = game_ui.Places(self, place, end_place, startxy)
 	
@@ -622,7 +624,7 @@ class AAB:
 			lx, ly = event.x, event.y
 			x, y = lx-px, ly-py
 			dist = math.sqrt(abs(x)**2 + abs(y)**2)
-			steps = dist / 1.75  # player speed 5.0 max
+			steps = dist / 3.75  # player speed 5.0 max
 			ax = x / steps
 			ay = y / steps
 			evt = None

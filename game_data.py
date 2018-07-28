@@ -206,7 +206,31 @@ map_markers = {
 	"cabin": {
 		"name": "Cabin",
 		"image": "bw-cabin-35x35",
-		"coords": (220, 400),
+		"coords": (150, 400),
+		"condition": None,
+		#"event": "place|cabin",  # future
+		#"place": "cabin", redundant as key is the parameter
+	},
+	"cave": {
+		"name": "Cave",
+		"image": "bw-cave-35x35",
+		"coords": (110, 200),
+		"condition": None,
+		#"event": "place|cabin",  # future
+		#"place": "cabin", redundant as key is the parameter
+	},
+	"house": {
+		"name": "House",
+		"image": "bw-house-35x35",
+		"coords": (530, 180),
+		"condition": None,
+		#"event": "place|cabin",  # future
+		#"place": "cabin", redundant as key is the parameter
+	},
+	"camp": {
+		"name": "Camp",
+		"image": "bw-tent-35x35",
+		"coords": (630, 300),
 		"condition": None,
 		#"event": "place|cabin",  # future
 		#"place": "cabin", redundant as key is the parameter
@@ -214,7 +238,7 @@ map_markers = {
 	"village": {
 		"name": "Village",
 		"image": "bw-village-50x50",
-		"coords": (425, 250),
+		"coords": (355, 250),
 		"condition": None,
 		#"event": "place|cabin",  # future
 		#"place": "cabin", redundant as key is the parameter
@@ -232,6 +256,36 @@ world_places = {
 			("Qstarted|main_quest0.0", None, "bw-house0-z|250,170"),
 			("Qdormant|main_quest0.0", "dialg|patience_cabin-descr", "bw-woman0|180,225"),
 			(None, "leave|", "bw-arrow_up|555,270"),
+		],
+	},
+	"cave": {
+		"name": "Cave",
+		"type": ["outdoors", "bw-bg_top1", "bw-bg_bot1"],
+		"entry_coords": (675, 317),
+		"walk_range": "default",
+		"events": [
+			(None, None, "bw-cave|100,175"),
+			(None, "leave|", "bw-arrow_up|705,270"),
+		],
+	},
+	"house": {
+		"name": "House",
+		"type": ["outdoors", "bw-bg_top1", "bw-bg_bot1"],
+		"entry_coords": (625, 317),
+		"walk_range": "default",
+		"events": [
+			(None, None, "bw-house1|250,160"),
+			(None, "leave|", "bw-arrow_up|705,270"),
+		],
+	},
+	"camp": {
+		"name": "Camp",
+		"type": ["outdoors", "bw-bg_top2", "bw-bg_bot1"],
+		"entry_coords": (425, 417),
+		"walk_range": "default",
+		"events": [
+			(None, None, "bw-gate0|245,210"),
+			(None, "leave|", "bw-arrow_down|445,545"),
 		],
 	},
 	"village_tavern": {
@@ -262,7 +316,7 @@ world_places = {
 	},
 	"village": {
 		"name": "Village",
-		"type": ["outdoors", "bw-bg_top0", "bw-bg_bot0"],
+		"type": ["outdoors", "bw-bg_top0", "bw-bg_bot1"],
 		"entry_coords": (625, 317),
 		"walk_range": "default",
 		"events": [
