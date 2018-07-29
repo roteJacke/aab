@@ -384,7 +384,7 @@ quests = {  # Quest added to fertigql if reward is given
 		"stage2": [
 			"    I got her a tonic.",
 		],
-		"reward": [100, 1, []],
+		"reward": [100, 1, ["hpot0"]],
 	},
 	# Main Quests
 	"A00": {

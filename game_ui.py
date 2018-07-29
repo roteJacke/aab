@@ -140,20 +140,20 @@ class Battle:
 				
 		
 		def create_text(x, y, txt, tagn=None, anchor="nw", font=("Helvetica",
-				12, "bold"), fill="white"):
+				12, "bold"), fill="black"):
 			#t1, t2 = "ui", "battle_ui"
 			t1, t2, tagn = "ui", "battle_ui", tagn if tagn != None else txt
 			self.cn.create_text(x, y, text=txt, tags=(t1, t2, tagn), font=font,
 				anchor=anchor, fill=fill)
 				
 		
-		def create_rect(x1, y1, x2, y2, tagn, fill, outl="", tagOverride=None):
+		def create_rect(x1, y1, x2, y2, tagn, fill, tagOverride=None, width=0):
 			t1, t2 = "ui", "battle_ui"
 			ntag = (t1, t2, tagn)
 			if tagOverride is not None:
 				ntag = tagOverride
 			self.cn.create_rectangle(x1, y1, x2, y2, tags=ntag,
-				fill=fill, outline=outl)
+				fill=fill, width=width)
 				
 				
 		def pznt(num_list):
@@ -185,8 +185,8 @@ class Battle:
 		
 		self.hheight = 20  # height of HP bar
 		self.rheight = 15  # height of AP bar
-		self.hcolor = "white"  # color of text on hpBar
-		self.hpbgc = "black"  # color of the hp bg box
+		self.hcolor = "black"  # color of text on hpBar
+		self.hpbgc = "light green"  # color of the hp bg box
 		self.hstart = 482  # height of stats of hp bar
 		
 		# Player stats
@@ -201,21 +201,21 @@ class Battle:
 		_pHPpz = "{}%".format(pznt(self.pHP))
 		_pAP = "AP: {}".format(self.pAP)
 		create_text(144, 415, self.pName, font=("Helvetica",
-				12, "bold"), fill="white")
+				12, "bold"), fill="black")
 		create_text(144, 440, _pAttk, "pStats_Attack", font=("Helvetica",
-				10, "bold"), fill="white")
+				10, "bold"), fill="black")
 		create_text(144, 455, _pTonics, "pStats_Tonics", font=("Helvetica",
-				10, "bold"), fill="white")
+				10, "bold"), fill="black")
 		# HP & AP bars           # reduce by 2p(1side each) to fit screen?
-		create_rect(141, 514-self.rheight-self.hheight, 289, 514-self.rheight, "pHP_box", self.hpbgc)
-		create_rect(141, 514-self.rheight-self.hheight, 289, 514-self.rheight, "pHP_color", "red")
-		create_rect(141, 514-self.rheight, 289, 514, "pAP_box", self.hpbgc)
-		create_rect(141, 514-self.rheight, 289, 514, "pAP_color", "green")
+		create_rect(141, 514-self.rheight-self.hheight, 289, 514-self.rheight, "pHP_box", self.hpbgc, width=1)
+		create_rect(141, 514-self.rheight-self.hheight, 289, 514-self.rheight, "pHP_color", "white", width=1)
+		create_rect(141, 514-self.rheight, 289, 514, "pAP_box", self.hpbgc, width=1)
+		create_rect(141, 514-self.rheight, 289, 514, "pAP_color", "light yellow", width=1)
 		# Vertical HP bar  - removed
 		# HP & AP stats
 		create_text(142, self.hstart, _pHP, "pStats_HPcount", fill=self.hcolor)
 		create_text(288, self.hstart, _pHPpz, "pStats_HP%", anchor="ne", fill=self.hcolor)
-		create_text(142, 500, _pAP, "pStats_AP", font=("Helvetica", 10, "bold"), fill="white")  # 287, 465 , anchor="ne"
+		create_text(142, 500, _pAP, "pStats_AP", font=("Helvetica", 10, "bold"))  # 287, 465 , anchor="ne"
 		
 		# Enemy stats
 		#_eAttk = "{}, {} dmg".format(self.eAttk, self.eDAMAGE)
@@ -227,22 +227,22 @@ class Battle:
 		_eHP = "{}/{}".format(self.eHP[0], self.eHP[1])
 		_eHPpz = "{}%".format(pznt(self.eHP))
 		_eAP = "AP: {}".format(self.eAP)
-		create_text(656, 415, self.eName, anchor="ne")  # 512
+		create_text(656, 415, self.eName, anchor="ne", fill="black")  # 512
 		create_text(656, 440, _eAttk, "eStats_Attack", anchor="ne", font=("Helvetica",
-				10, "bold"), fill="white")
+				10, "bold"), fill="black")
 		create_text(656, 455, _eTonics, "eStats_Tonics", anchor="ne", font=("Helvetica",
-				10, "bold"), fill="white")
+				10, "bold"), fill="black")
 		# HP & AP bars           # reduce by 2p(1side each) to fit screen?
-		create_rect(511, 514-self.rheight-self.hheight, 659, 514, "eHP_box", self.hpbgc)
-		create_rect(511, 514-self.rheight-self.hheight, 659, 514, "eHP_color", "red")
-		create_rect(511, 514-self.rheight, 659, 514, "eAP_box", self.hpbgc)
-		create_rect(511, 514-self.rheight, 659, 514, "eAP_color", "green")
+		create_rect(511, 514-self.rheight-self.hheight, 659, 514, "eHP_box", self.hpbgc, width=1)
+		create_rect(511, 514-self.rheight-self.hheight, 659, 514, "eHP_color", "white", width=1)
+		create_rect(511, 514-self.rheight, 659, 514, "eAP_box", self.hpbgc, width=1)
+		create_rect(511, 514-self.rheight, 659, 514, "eAP_color", "light yellow", width=1)
 		# Vertical HP bar  - removed
 		# HP & AP stats
 		#create_text(513, 465, _eAP, "eStats_AP")
 		create_text(512, self.hstart, _eHPpz, "eStats_HP%", fill=self.hcolor)
 		create_text(658, self.hstart, _eHP, "eStats_HPcount", anchor="ne", fill=self.hcolor)
-		create_text(658, 500, _eAP, "eStats_AP", anchor="ne", font=("Helvetica", 10, "bold"), fill="white")  # 513, 465 , anchor="ne"
+		create_text(658, 500, _eAP, "eStats_AP", anchor="ne", font=("Helvetica", 10, "bold"))  # 513, 465 , anchor="ne"
 		
 		
 		# BATTLE FUNCTIONS
@@ -637,15 +637,17 @@ class Battle:
 			pAbox = self.pAP / float(self.pAP_max) * 100.0 * 1.48  # calculate px
 			eAbox = self.eAP / float(self.eAP_max) * 100.0 * 1.48
 			# remade HP & AP bars
-			create_rect(140, 515-self.rheight-self.hheight, 140+pbox, 515-self.rheight, "pHP_color", "red")
-			create_rect(140, 515-self.rheight, 140+pAbox, 515, "pAP_color", "green")
-			create_rect(660-ebox, 515-self.rheight-self.hheight, 660, 515-self.rheight, "eHP_color", "red")
-			create_rect(660-eAbox, 515-self.rheight, 660, 515, "eAP_color", "green")
+			'''
+			create_rect(140, 515-self.rheight-self.hheight, 140+pbox, 515-self.rheight, "pHP_color", "white", width=1)
+			create_rect(140, 515-self.rheight, 140+pAbox, 515, "pAP_color", "light yellow", width=1)
+			create_rect(660-ebox, 515-self.rheight-self.hheight, 660, 515-self.rheight, "eHP_color", "white", width=1)
+			create_rect(660-eAbox, 515-self.rheight, 660, 515, "eAP_color", "light yellow", width=1)
+			'''
 			# 515
-			create_rect(141, 514-self.rheight-self.hheight, 141+pbox, 514-self.rheight, "pHP_color", "red")
-			create_rect(141, 514-self.rheight, 141+pAbox, 514, "pAP_color", "green")
-			create_rect(659-ebox, 514-self.rheight-self.hheight, 659, 514-self.rheight, "eHP_color", "red")
-			create_rect(659-eAbox, 514-self.rheight, 659, 514, "eAP_color", "green")
+			create_rect(141, 514-self.rheight-self.hheight, 141+pbox, 514-self.rheight, "pHP_color", "white", width=1)
+			create_rect(141, 514-self.rheight, 141+pAbox, 514, "pAP_color", "white", width=1)
+			create_rect(659-ebox, 514-self.rheight-self.hheight, 659, 514-self.rheight, "eHP_color", "white", width=1)
+			create_rect(659-eAbox, 514-self.rheight, 659, 514, "eAP_color", "white", width=1)
 			# make visible, blocked by HP & AP bars
 			self.cn.tag_raise("pStats_HPcount")
 			self.cn.tag_raise("pStats_HP%")
@@ -808,12 +810,13 @@ class Dialogs:
 	
 	def _go_btl(self, id, battle_data, after_event, *args):
 		if not self.world.aktiv_caUI:
-			self.cn.delete(self.mtag)
+			#self.cn.delete(self.mtag)
 			a = battle_data.split("=")
 			#self._special_event(id)
 			enemy = a[0]
 			paths = a[1].split("::")
 			self.world.check_event_events(after_event)
+			self._leave_dlg()
 			#self.go_place(self.dialogdata["location"])
 			self.world.start_battle(enemy, paths)
 	
@@ -822,10 +825,20 @@ class Dialogs:
 		if not self.world.aktiv_caUI:
 			# id conflicts with xy
 			#self._special_event(id)
-			self.world.check_event_events(after_event)
-			self.cn.delete(self.mtag)
-			self.world.start_place(evt, startxy=xy)
-			
+			#self.world.check_event_events(after_event)
+			#self.cn.delete(self.mtag)
+			#self.world.start_place(evt, startxy=xy)
+			self._leave_dlg()
+		
+			startxy = None
+			edata = evt.split("*")
+			evt_name = edata[0]
+			if len(edata) > 1:
+				a = edata[1].split(",")
+				startxy = (int(a[0]), int(a[1]))
+			self.world.check_event_events(after_event)	
+			self.world.start_place(evt_name, startxy=startxy)
+		
 	
 	def _go_str(self, id, merchant, after_event, *args):
 		if not self.world.aktiv_caUI:
@@ -842,11 +855,11 @@ class Dialogs:
 			self.world.start_tradebox(container, bg=bg)
 
 
-	def _leave_dlg(self, id, *args):
+	def _leave_dlg(self, *args):
 		if not self.world.aktiv_caUI:
 			self.cn.delete(self.mtag)
 			if self.extract is not None:
-				self._special_event(id)
+				#self._special_event(id)
 				self.extract()
 	
 
@@ -924,15 +937,17 @@ class Inventory:
 	
 	
 	def set_ui(self, *args):  # ui skeleton
-		self.mimg(400, 50, "inv_bg-635x485", anchor="n")
-		self.mimg(400, 50, "inv_bgt-635x25", anchor="n")
+		#self.mimg(400, 50, "inv_bg-635x485", anchor="n")
+		self.mrect(84, 75, 635, 454, fill="white", width=2)
+		#self.mimg(400, 50, "inv_bgt-635x25", anchor="n")
 		# creating party1 info panel
 		X, Y = 109, 95  # starting nw coords of the partyl inv panel
-		self.mimg(X, Y, "inv_bg1-280x105")
+		#self.mimg(X, Y, "inv_bg1-280x105")
+		self.mrect(X, Y, 280, 105, fill="white", width=2)
 		self.mimg(X, Y, "ava_player-100x105", tags=("p1_ava"))  # default ava
 		self.mtxt(X+105, Y+5, "Geralt of Rpivilon", font=self.font1b,
 			tags=("p1_name", "p1_stats"))
-		self.mrect(X+103, Y+27, 172, 22, "#851122", tags=("p1_hpbar_bg"))
+		self.mrect(X+103, Y+27, 172, 22, "light green", tags=("p1_hpbar_bg"), width=1)
 		self.mrect(X+103, Y+27, 172, 22, "brown", tags=("p1_hpbar"))
 		self.mtxt(X+105, Y+28, "HP:", font=self.font2, tags=("p1_statsn"))
 		self.mtxt(X+272, Y+28, "0", font=self.font2,
@@ -947,9 +962,11 @@ class Inventory:
 				n = x + (i * 2)
 				txt = s[n][0][:-1]
 				# create stat display
-				self.mrect(x1, y1, w, h, "#851122", 
+				#self.mrect(x1, y1, w, h, "#851122", 
+				#	tags=("p1_{}bar_bg".format(txt)))
+				self.mrect(x1, y1, w, h, "light green", width=1, 
 					tags=("p1_{}bar_bg".format(txt)))
-				self.mrect(x1, y1, w, h, "brown",
+				self.mrect(x1, y1, w, h, "white",
 					tags=("p1_{}bar".format(txt)))
 				self.mtxt(x1 + 2, y1 + 1, s[n][0],
 					font=self.font2, tags=("p1_statsn"))
@@ -958,7 +975,8 @@ class Inventory:
 					tags=("p1_{}".format(txt), "p1_statsn"))
 		# creating party1 equipped items and other stats
 		X1, Y1 = 109, 205  # starting nw coords
-		self.mimg(X1, Y1, "bg_inv-280x306")
+		#self.mimg(X1, Y1, "bg_inv-280x306")
+		self.mrect(X1, Y1, 280, 306, fill="white", width=1)
 		self.mimg(X1+65, Y1+17, "img_player-150x200", "p1_img")
 		#b = ["helmet", "armor", "boots", "ring", "weapon", "trinket"]
 		b = [None, "armor", None, None, "weapon", None]
@@ -981,8 +999,8 @@ class Inventory:
 		lvl = self.p1data["stats"][5] // 1000
 		self.mtxt(X1+210, Y1+193, "lvl {}".format(lvl), anchor=tk.NE, font=self.font2b, 
 			tags="lvl")
-		self.mrect(X1+67, Y1+222, 146, 15, "#851122", tags=("p1_expbar_bg"))
-		self.mrect(X1+67, Y1+222, 73, 15, "brown", tags=("p1_expbar"))
+		self.mrect(X1+67, Y1+222, 146, 15, "light green", tags=("p1_expbar_bg"), width=1)
+		self.mrect(X1+67, Y1+222, 73, 15, "white", tags=("p1_expbar"), width=1)
 		c = [
 			["Scn:", "0"], ["Exp:", "1"], ["H%:", "2"],
 			["IA%:", "3"], ["C%:", "4"], ["Cd%:", "5"]
@@ -999,9 +1017,9 @@ class Inventory:
 				x1 += 0 if i == 0 else b  # make space due to rect increase
 				w += b if i == 0 else 0  # increase size of rect
 				# create stat display
-				self.mrect(x1, y1, w, h, "#851122", 
+				self.mrect(x1, y1, w, h, "light green", width=1,
 					tags=("p1_{}bar_bg".format(txt)))
-				self.mrect(x1, y1, w, h, "brown",
+				self.mrect(x1, y1, w, h, "white", width=1,
 					tags=("p1_{}bar".format(txt)))
 				self.mtxt(x1 + 2, y1 + 1, c[n][0],
 					font=self.font2, tags=("p1_statsn"))
@@ -1010,7 +1028,8 @@ class Inventory:
 					tags=("p1_{}".format(txt), "p1_statsn"))
 		# creating place holder img with leave button
 		X2, Y2 = 412, 95
-		self.mimg(X2, Y2, "inv_bg1-280x105")
+		#self.mimg(X2, Y2, "inv_bg1-280x105")
+		self.mrect(X2, Y2, 280, 105, fill="white", width=2)
 		self.mimg(X2+6, Y2+8, "aInv_bg0-220x90")
 		self.mimg(X2+229, Y2+15, "img_button2", tags=("leave_btn"))
 		self.cn.tag_bind(self.m("leave_btn"), "<Button-1>", self.leave_inv)
@@ -1056,7 +1075,7 @@ class Inventory:
 		self.cn.itemconfigure(m("p1_ava"), image=self.rsc[p1["avatar"]])
 		self.cn.delete(m("p1_hpbar"))
 		l = 172.0 * (p1["stats"][0][0] / float(p1["stats"][0][1]))
-		self.mrect(X+103, Y+27, l, 22, "brown", tags=("p1_hpbar"))
+		self.mrect(X+103, Y+27, l, 22, "white", tags=("p1_hpbar"), width=1)
 		txt = "{}/{}".format(p1["stats"][0][0], p1["stats"][0][1])
 		self.cn.itemconfigure(m("p1_hp"), text=txt)
 		self.cn.itemconfigure(m("p1_img"), image=self.rsc[p1["image"]])
@@ -1079,7 +1098,7 @@ class Inventory:
 				max = maxn[n]
 				l = float(w) * (s1[n] / float(max))
 				l = w if l > w else l
-				self.mrect(x1, y1, l, h, "brown", tags=(tag1))
+				self.mrect(x1, y1, l, h, "white", tags=(tag1), width=1)
 		e = p1["equipped"]
 		#b = ["helmet", "armor", "boots", "ring", "weapon", "trinket"]
 		b = [None, "armor", None, None, "weapon", None]
@@ -1093,7 +1112,7 @@ class Inventory:
 				self.cn.itemconfigure(m(tag), image=img)
 		self.cn.delete(m("p1_expbar"))
 		l = 146.0 * (p1["stats"][5] % 1000 / 1000.0)
-		self.mrect(X1+67, Y1+222, l, 15, "brown", tags=("p1_expbar"))
+		self.mrect(X1+67, Y1+222, l, 15, "white", tags=("p1_expbar"), width=1)
 		c = [
 			["Scn:", "0"], ["Exp:", "1"], ["H%:", "2"],
 			["IA%:", "3"], ["C%:", "4"], ["Cd%:", "5"]
@@ -1125,7 +1144,7 @@ class Inventory:
 				if n >= 2:
 					rect_s = w if rect_s > w else rect_s
 				self.cn.delete(tag1)
-				self.mrect(x1, y1, rect_s, h, "brown", tags=(tag1))
+				self.mrect(x1, y1, rect_s, h, "white", tags=(tag1), width=1)
 		p1_inv = p1["inventory"] + ["empty"] * (24 - len(p1["inventory"]))
 		for row in range(4):
 			for col in range(6):
@@ -1260,10 +1279,16 @@ class Inventory:
 					sn, sv = "A:", self.items[inv[invn][item_index]]["attack_value"]
 				mtag = ("hover_stats",)
 				self.mimg(xn, yn, image="bg-150x105", tags=mtag)
+				'''
 				self.mrect(xn+3, yn+3, 144, 78, "#776611", tags=mtag)
 				self.mrect(xn+3, yn+3, 144, 78, "#776611", tags=mtag)
 				self.mrect(xn+3, yn+81, 49, 21, "#774411", tags=mtag)
 				self.mrect(xn+52, yn+81, 95, 21, "#773311", tags=mtag)
+				'''
+				self.mrect(xn+3, yn+3, 144, 78, "white", tags=mtag)
+				self.mrect(xn+3, yn+3, 144, 78, "white", tags=mtag)
+				self.mrect(xn+3, yn+81, 49, 21, "white", tags=mtag)
+				self.mrect(xn+52, yn+81, 95, 21, "white", tags=mtag)
 				self.mtxt(xn+5, yn+4, item_n, mtag, self.ftheme[1])
 				self.mtxt(xn+7, yn+18, itp, mtag, (self.fn[1], 9))
 				self.mtxt(xn+5, yn+30, ids, mtag, (self.fn[0], 11), width=140)
@@ -1293,11 +1318,11 @@ class Inventory:
 		return tags
 	
 	
-	def mrect(self, x1, y1, w, h, fill="black", tags=None):
+	def mrect(self, x1, y1, w, h, fill="black", tags=None, c=None, width=0, *args):
 		tags = self.check_tags(tags)  # must be tuple
 		self.cn.create_rectangle(x1, y1, x1+w, y1+h, fill=fill, tags=tags,
-			outline="")
-		
+			outline=c, width=width)
+	
 	
 	def mimg(self, x, y, image, tags=None, anchor=tk.NW, *args):
 		tags = self.check_tags(tags)  # must be tuple
@@ -1354,10 +1379,11 @@ class Perks:
 		self.font2 = ("Segoe UI", 11)  # stats
 		self.font2b = ("Segoe UI", 11, "bold")
 		self.font3 = ("Book Antiqua", 17)  # buttons
-		self.c = "#671111"  # perk line border color
+		#self.c = "#671111"  # perk line border color
 		#self.c = "#675511"  # perk line border color
 		#self.c1 = "#a5951f"
-		self.c1 = "black"
+		#self.c1 = "black"
+		self.c, self.c1 = "brown", "black"
 		
 
 	def save_perks(self, *args):
@@ -1751,7 +1777,8 @@ class Perks:
 		def m(tags):
 			return self.m(tags)
 		p1 = self.p1data
-		X, Y = 95, 85  # starting nw coords of the partyl inv panels
+		#X, Y = 95, 85  # starting nw coords of the partyl inv panels
+		X, Y = 95, 95  # starting nw coords of the partyl inv panels
 		'''
 		a = [  # Name, Value, Cap
 			["HP:", p1["stats"][0][0], p1["stats"][0][1]],
@@ -1801,9 +1828,9 @@ class Perks:
 					l = float(w) * (a[n][1] / float(a[n][2]))
 					l = w if l > w else l
 				# create stat display
-				self.mrect(x1, y1, w, h, "#851122", 
+				self.mrect(x1, y1, w, h, "light green", width=1, 
 					tags=("p1_{}bar_bg".format(txt), "pmain_stats"))
-				self.mrect(x1, y1, l, h, "brown",
+				self.mrect(x1, y1, l, h, "white", width=1,
 					tags=("p1_{}bar".format(txt), "pmain_stats"))
 				self.mtxt(x1 + 2, y1 + 1, a[n][0],
 					font=self.font2, tags=("pmain_stats"))
@@ -1813,9 +1840,11 @@ class Perks:
  		
 	
 	def set_ui(self, *args):  # ui skeleton
-		self.mimg(400, 50, "inv_bg-635x485", anchor="n")
-		self.mimg(400, 50, "inv_bgt-635x25", anchor="n")
-		X, Y = 95, 85  # starting nw coords of the partyl inv panel
+		#self.mimg(400, 50, "inv_bg-635x485", anchor="n")
+		self.mrect(84, 75, 635, 454, fill="white", width=2)
+		#self.mimg(400, 50, "inv_bgt-635x25", anchor="n")
+		#X, Y = 95, 85  # starting nw coords of the partyl inv panel
+		X, Y = 95, 95  # starting nw coords of the partyl inv panel
 		self.mimg(X, Y, "ava_player-100x105", tags=("p1_ava"))  # default ava
 		self.mtxt(X+106, Y+5, "Geralt of Rpivilon", font=self.font1b,
 			tags=("p1_name", "p1_stats"))
@@ -1829,10 +1858,10 @@ class Perks:
 		self.cn.tag_bind(self.m("leave_btn"), "<Button-1>", self.leave_perks_ui)
 		for i in range(3):
 			x = 94 + (i * 205)
-			y = 200
+			y = 210
 			self.mimg(x, y, "s{}-203x300".format(i+1))
-		self.mbtn(498, 168, "Save Perks", self.save_perks)
-		self.mbtn(597, 168, "Cancel", self.reset_perks)
+		self.mbtn(498, 178, "Save Perks", self.save_perks)
+		self.mbtn(597, 178, "Cancel", self.reset_perks)
 		self.cn.tag_lower(self.m("btn_Save Perks"))
 		self.cn.tag_lower(self.m("btn_Cancel"))
 		#self.cn.tag_bind(self.m("p1_ava"), "<Button-1>", self.save_perks)
@@ -1921,7 +1950,7 @@ class Perks:
 		if w is None:
 			w = 4 + (9 * len(text))
 		tag = "btn_{}".format(text)
-		self.mrect(x1, y1, w, 25, "brown", tag, "black", 2)
+		self.mrect(x1, y1, w, 25, "white", tag, "black", 1)
 		x2, y2 = x1 + (w / 2) - 1, y1 + 1
 		self.mtxt(x2, y2, text, tag, anchor=tk.N, width=w)
 		if command is not None:
@@ -1962,7 +1991,7 @@ class Places:
 		self.mlmt = self.world.world_places[place]["walk_range"]
 		if self.mlmt == "default":
 			if self.world.world_places[self.place]["type"][0] == "outdoors":
-				self.mlmt = (35, 350, 765, 535)
+				self.mlmt = (35, 300, 765, 535)
 			else:
 				self.mlmt = (75, 285, 725, 430)
 		#self.sxy = startxy if startxy != None else (400, 375)
@@ -1996,7 +2025,7 @@ class Places:
 			if ly < self.mlmt[1]: ly = self.mlmt[1]
 			elif ly > self.mlmt[3]: ly = self.mlmt[3]
 			pimg = self.pdata["place_image"]
-			speed = 4.25
+			speed = 7.25
 			if self.world.world_places[self.place]["type"][0] != "outdoors":
 				pimg = self.pdata["place_indoor_image"]
 				speed = 6.19
@@ -2230,24 +2259,32 @@ class Quests:
 		
 	
 	def load_basic_ui(self, *args):
+		'''
 		self.zbox.mimg(20, 50, "dtxt_bg-760x485")
 		self.zbox.mimg(30, 61, "dtxt_txtbg-530x465")
 		self.zbox.mimg(570, 61, "dtxt_choices-200x466")
+		'''
+		self.zbox.mrect(20, 50, 760, 485, fill="white", width=2)
+		self.zbox.mrect(30, 61, 530, 465, fill="white", width=1)
+		self.zbox.mrect(570, 61, 200, 466, fill="white", width=1)
 		#self.zbox.mtxt(40, 81, "", "title", font=(self.fn[0], 15, "bold"))
 		self.zbox.mtxt(295, 81, "", "title", font=(self.fn[0], 15, "bold"), anchor="n")
 		self.zbox.mtxt(40, 120, "", "text", width=510)
 		self.zbox.mtxt(42, 410, "", "rwd_text", self.ftheme[1], width=510)
-		self.zbox.mtxt(670, 85, "Active Quests", None,
+		self.zbox.mtxt(670, 120, "Active Quests", None,
 			(self.fn[0], 15), "center")
 		self.zbox.mtxt(630, 242, "<<<", "ak<<<", (self.fn[1], 16), "center")
 		self.zbox.mtxt(710, 242, ">>>", "ak>>>", (self.fn[1], 16), "center")
-		self.zbox.mtxt(670, 277, "Leave Quests Screen", "leave_btn",
-			(self.fn[1], 14), "center")
-		tagl = self.zbox.m("leave_btn")
+		tag0 = "leave_btn"
+		tagl = self.zbox.m(tag0)
+		y = 68
+		self.zbox.mrect(575, y, 190, 30, "white", (tag0, tag0+"_rect"), width=1)
+		self.zbox.mtxt(670, y+14, "Exit Quests Screen",
+			(tag0, tag0+"_txt"), (self.fn[1], 14), "center")
 		self.cn.tag_bind(tagl, "<Enter>", 
-			lambda _=1: self.cn.itemconfigure(tagl, fill="orange"))
+			lambda _=1: self.cn.itemconfigure(self.zbox.m(tag0+"_rect"), width=2))
 		self.cn.tag_bind(tagl, "<Leave>",
-			lambda _=1: self.cn.itemconfigure(tagl, fill="black"))
+			lambda _=1: self.cn.itemconfigure(self.zbox.m(tag0+"_rect"), width=1))
 		self.cn.tag_bind(tagl, "<Button-1>", self._leave_quest)
 		self.zbox.mtxt(670, 312, "Completed Quests", None,
 			(self.fn[0], 14), "center")
@@ -2257,7 +2294,6 @@ class Quests:
 		self.cn.tag_bind(self.zbox.m("ak>>>"), "<Button-1>", lambda _=1: self.change_akpage(1))
 		self.cn.tag_bind(self.zbox.m("fg<<<"), "<Button-1>", lambda _=1: self.change_fgpage(-1))
 		self.cn.tag_bind(self.zbox.m("fg>>>"), "<Button-1>", lambda _=1: self.change_fgpage(1))
-		
 	
 	
 	def change_akpage(self, page_change, *args):
@@ -2313,7 +2349,7 @@ class Quests:
 			except: continue
 			tag0 = "qitem_{}".format(qname)
 			tag = self.zbox.m(tag0)
-			x = 100
+			x = 135
 			self.zbox.mimg(575, x+(i*33), ci, (tag0, tag0+"_img", "akitem"))
 			self.zbox.mtxt(582, x+5+(i*33), self.quests[qname]["name"], (tag0, "akitem"))
 			#self.cn.tag_bind(tag, "<Enter>", lambda _=1, t=tag0: qhover(t))
@@ -2497,10 +2533,15 @@ class Quests:
 		elif itp == "weapon": sn, sv = "A:", self.items[item]["attack_value"]
 		# what it means when cat curls its tail
 		# add later
-		self.zbox.mimg(x, y, "zibox_bg-150x105", tag)
+		self.zbox.mimg(x, y, "hover_stats", tag)
+		'''
 		self.zbox.mrect(x+3, y+3, 144, 78, "#776611", tag)
 		self.zbox.mrect(x+3, y+81, 49, 21, "#774411", tag)
 		self.zbox.mrect(x+52, y+81, 95, 21, "#773311", tag)
+		'''
+		self.zbox.mrect(x+3, y+3, 144, 78, "white", tag)
+		self.zbox.mrect(x+3, y+81, 49, 21, "white", tag)
+		self.zbox.mrect(x+52, y+81, 95, 21, "white", tag)
 		self.zbox.mtxt(x+5, y+4, inm, tag, self.ftheme[1])
 		self.zbox.mtxt(x+7, y+18, itp, tag, (self.fn[1], 9))
 		self.zbox.mtxt(x+5, y+30, ids, tag, (self.fn[0], 11), width=140)
@@ -2571,7 +2612,7 @@ class Stores:  # COMPLETED
 		p_hasgold = True if pgleft >= 0 else False
 		m_hasgold = True if mgleft >= 0 else False
 		self.cn.itemconfigure(self.zbox.m("b_brtr_txt"), fill="green")
-		self.cn.itemconfigure(self.zbox.m("brtr_txt"), fill="yellow")
+		self.cn.itemconfigure(self.zbox.m("brtr_txt"), fill="green")
 		tgs = ["stat_brtr"]
 		if p_hasgold and m_hasgold: tgs.append("b_brtr_txt")
 		if p_hasgold: tgs.append("stat_pbuy")
@@ -2610,11 +2651,12 @@ class Stores:  # COMPLETED
 		plvl = self.pdata["stats"][5] // 1000
 		pcoin = self.pdata["coin"]
 		# build the ui
-		self.zbox.mimg(20, 50, "dtxt_bg-760x485")
-		self.zbox.mimg(20, 50, "dtxt_upbar-760x25")
+		#self.zbox.mimg(20, 50, "dtxt_bg-760x485")
+		#self.zbox.mimg(20, 50, "dtxt_upbar-760x25")
+		self.zbox.mrect(20, 60, 760, 475, fill="white", width=2)
 		# player info panel
 		X, Y = 45, 93
-		self.zbox.mimg(X, Y, "inv_cbg-280x105")
+		self.zbox.mrect(X, Y, 280, 105, fill="white", width=2)
 		self.zbox.mimg(X, Y, self.pdata["avatar"])
 		self.zbox.mimg(X+182, Y+23, aimg, "parmor")
 		self.zbox.mimg(X+229, Y+23, wimg, "pweapon")
@@ -2641,7 +2683,7 @@ class Stores:  # COMPLETED
 			["Def", "{}".format(int(pstats[3]))],
 		]
 		for i in range(len(a)):
-			self.zbox.mrect(x0, y0+(i*23), 74, 21, fill="brown")
+			self.zbox.mrect(x0, y0+(i*23), 74, 21, fill="white", width=1)
 			self.zbox.mtxt(x0+2, y0+(i*23), a[i][0], font=self.ftheme[2])
 			self.zbox.mtxt(x0+70, y0+(i*23), a[i][1], font=self.ftheme[2],
 				anchor="ne")
@@ -2652,7 +2694,7 @@ class Stores:  # COMPLETED
 		for rw in range(4):
 			for cl in range(6):
 				n = cl + (rw * 6)
-				p = self.items[pnv[n]]["image"] if pnv[n] != "e" else "invi_e"
+				p = self.items[pnv[n]]["image"] if pnv[n] != "e" else "inv_empty-45x75"
 				x, y = X1+(cl*47), Y1+(rw*77)
 				invslot_tag0 = "pinv_slot{}".format(n)
 				invslot_tag = self.zbox.m("pinv_slot{}".format(n))
@@ -2665,7 +2707,8 @@ class Stores:  # COMPLETED
 		# merchant info panel
 		m = self.mdata
 		X2, Y2 = 475, 93
-		self.zbox.mimg(X2, Y2, "inv_cbg-280x105")
+		#self.zbox.mimg(X2, Y2, "inv_cbg-280x105")
+		self.zbox.mrect(X2, Y2, 280, 105, fill="white", width=2)
 		self.zbox.mimg(X2+180, Y2, m["avatar"])
 		self.zbox.mimg(X2+6, Y2+23, "btn_think-45x75", "b_reset")
 		self.zbox.mimg(X2+53, Y2+23, "btn_leave-45x75", "b_leave")
@@ -2675,7 +2718,7 @@ class Stores:  # COMPLETED
 		self.zbox.mtxt(X2+9, Y2+5, "Scnr:")
 		self.zbox.mtxt(X2+94, Y2+5, m["coin"], "mcoin", anchor="ne")
 		x1, y1 = X2 + 102, Y2 + 29
-		for i in range(3): self.zbox.mrect(x1, y1+(i*23), 74, 21, "brown")
+		for i in range(3): self.zbox.mrect(x1, y1+(i*23), 74, 21, "white", width=1)
 		# merchant inventory
 		inv2 = m["inventory"]
 		mnv = inv2 + ["e"] * (24 - len(inv2))
@@ -2683,7 +2726,7 @@ class Stores:  # COMPLETED
 		for rw in range(4):
 			for cl in range(6):
 				n = cl + (rw * 6)
-				p = self.items[mnv[n]]["image"] if mnv[n] != "e" else "invi_e"
+				p = self.items[mnv[n]]["image"] if mnv[n] != "e" else "inv_empty-45x75"
 				x, y = X3+(cl*47), Y3+(rw*77)
 				invslot_tag0 = "minv_slot{}".format(n)
 				invslot_tag = self.zbox.m("minv_slot{}".format(n))
@@ -2766,7 +2809,7 @@ class Stores:  # COMPLETED
 		for rw in range(4):
 			for cl in range(6):
 				n = cl + (rw * 6)
-				pnvimg = mnvimg = "invi_e"
+				pnvimg = mnvimg = "inv_empty-45x75"
 				if pnv[n] != "e": pnvimg = self.items[pnv[n]]["image"]
 				if mnv[n] != "e": mnvimg = self.items[mnv[n]]["image"]
 				ptag = self.zbox.m("pinv_slot{}".format(n))
@@ -2795,10 +2838,12 @@ class Stores:  # COMPLETED
 		elif itp == "weapon": sn, sv = "A:", self.items[item]["attack_value"]
 		# what it means when cat curls its tail
 		# add later
-		self.zbox.mimg(x, y, "zibox_bg-150x105", tag)
+		self.zbox.mimg(x, y, "hover_stats", tag)
+		'''
 		self.zbox.mrect(x+3, y+3, 144, 78, "#776611", tag)
 		self.zbox.mrect(x+3, y+81, 49, 21, "#774411", tag)
 		self.zbox.mrect(x+52, y+81, 95, 21, "#773311", tag)
+		'''
 		self.zbox.mtxt(x+5, y+4, inm, tag, self.ftheme[1])
 		self.zbox.mtxt(x+7, y+18, itp, tag, (self.fn[1], 9))
 		self.zbox.mtxt(x+5, y+30, ids, tag, (self.fn[0], 11), width=140)
@@ -2820,7 +2865,7 @@ class Stores:  # COMPLETED
 			self.cn.itemconfigure(tag, fill="black")
 		else:
 			self.cn.tag_raise(tag)
-			self.cn.itemconfigure(tag, fill="yellow")
+			self.cn.itemconfigure(tag, fill="green")
 			self.parent.after(500, lambda: self._gold_glow(True))
 	
 	
@@ -2884,15 +2929,16 @@ class Tradebox:
 		plvl = self.pdata["stats"][5] // 1000
 		pcoin = self.pdata["coin"]
 		# build the ui
-		self.zbox.mimg(400, 50, "trdbox_bg-635x485", anchor="n")
-		self.zbox.mimg(400, 50, "trdbox_upbar-635x25", anchor="n")
+		#self.zbox.mimg(400, 50, "trdbox_bg-635x485", anchor="n")
+		#self.zbox.mimg(400, 50, "trdbox_upbar-635x25", anchor="n")
+		self.zbox.mrect(84, 75, 635, 454, fill="white", width=2)
 		# player info panel
-		X, Y = 109, 93
-		self.zbox.mimg(X, Y, "inv_cbg-280x105")
+		X, Y = 109, 95
+		#self.zbox.mimg(X, Y, "inv_cbg-280x105")
+		self.zbox.mrect(X, Y, 280, 105, fill="white", width=2)
 		self.zbox.mimg(X, Y, self.pdata["avatar"])
 		self.zbox.mimg(X+182, Y+23, aimg, "parmor")
 		self.zbox.mimg(X+229, Y+23, wimg, "pweapon")
-		
 		if self.pdata["equipped"][1] != None: 
 			self.cn.tag_bind(self.zbox.m("parmor"), "<Enter>",
 				lambda _=1: self._hvr_inv(227, 116, 1, 2))
@@ -2902,7 +2948,6 @@ class Tradebox:
 			self.cn.tag_bind(self.zbox.m("pweapon"), "<Enter>",
 				lambda _=1: self._hvr_inv(274, 116, 4, 2))
 			self.cn.tag_bind(self.zbox.m("pweapon"), "<Leave>", self._hvr_fade)	
-		
 		self.zbox.mtxt(X+103, Y+7, pnm, font=self.ftheme[1])
 		self.zbox.mtxt(X+95, Y+83, plvl, "plvl", self.ftheme[1], "ne")
 		self.zbox.mtxt(X+185, Y+5, "Scnr:", font=self.ftheme[0])
@@ -2915,7 +2960,7 @@ class Tradebox:
 			["Def", "{}".format(int(pstats[3]))],
 		]
 		for i in range(len(a)):
-			self.zbox.mrect(x0, y0+(i*23), 74, 21, fill="brown")
+			self.zbox.mrect(x0, y0+(i*23), 74, 21, fill="white", width=1)
 			self.zbox.mtxt(x0+2, y0+(i*23), a[i][0], font=self.ftheme[2])
 			self.zbox.mtxt(x0+70, y0+(i*23), a[i][1], font=self.ftheme[2],
 				anchor="ne")
@@ -2926,7 +2971,7 @@ class Tradebox:
 		for rw in range(4):
 			for cl in range(6):
 				n = cl + (rw * 6)
-				p = self.items[pnv[n]]["image"] if pnv[n] != "e" else "invi_e"
+				p = self.items[pnv[n]]["image"] if pnv[n] != "e" else "inv_empty-45x75"
 				x, y = X1+(cl*47), Y1+(rw*77)
 				invslot_tag0 = "pinv_slot{}".format(n)
 				invslot_tag = self.zbox.m("pinv_slot{}".format(n))
@@ -2938,14 +2983,14 @@ class Tradebox:
 				self.cn.tag_bind(invslot_tag, "<Leave>", self._hvr_fade)
 		# container info panel
 		m = self.cdata
-		X2, Y2 = 412, 93
+		X2, Y2 = 412, 95
 		''' destroys symmetry.
 		X3, Y3 = X2, Y2 + 110
 		try:
 			self.zbox.mimg(X3-15, Y3-60, self.cdata["box_image"], anchor="nw")
 		except: pass
 		'''
-		self.zbox.mimg(X2, Y2, "inv_cbg-280x105")
+		self.zbox.mrect(X2, Y2, 280, 105, fill="white", width=2)
 		self.zbox.mimg(X2+180, Y2, m["avatar"])
 		self.zbox.mimg(X2+6, Y2+23, "btn_think-45x75", "b_reset")
 		self.zbox.mimg(X2+53, Y2+23, "btn_leave-45x75", "b_leave")
@@ -2958,7 +3003,7 @@ class Tradebox:
 		#b = [["+All", "-100"], ["+1k", "-1k"], ["+100", "-All"]]
 		b = [["-All", "+100"], ["-1k", "+1k"], ["-100", "+All"]]
 		for i in range(3): 
-			self.zbox.mrect(x1, y1+(i*23), 74, 21, "brown")
+			self.zbox.mrect(x1, y1+(i*23), 74, 21, "white", width=1)
 			self.zbox.mtxt(x1+2, y1+(i*23), b[i][0], b[i][0], self.ftheme[2])
 			self.zbox.mtxt(x1+72, y1+(i*23), b[i][1], b[i][1],
 				self.ftheme[2], "ne")
@@ -2973,7 +3018,7 @@ class Tradebox:
 		for rw in range(4):
 			for cl in range(6):
 				n = cl + (rw * 6)
-				p = self.items[mnv[n]]["image"] if mnv[n] != "e" else "invi_e"
+				p = self.items[mnv[n]]["image"] if mnv[n] != "e" else "inv_empty-45x75"
 				x, y = X3+(cl*47), Y3+(rw*77)
 				invslot_tag0 = "cinv_slot{}".format(n)
 				invslot_tag = self.zbox.m("cinv_slot{}".format(n))
@@ -3027,7 +3072,7 @@ class Tradebox:
 		for rw in range(4):
 			for cl in range(6):
 				n = cl + (rw * 6)
-				pnvimg = cnvimg = "invi_e"
+				pnvimg = cnvimg = "inv_empty-45x75"
 				if pnv[n] != "e": pnvimg = self.items[pnv[n]]["image"]
 				if cnv[n] != "e": cnvimg = self.items[cnv[n]]["image"]
 				ptag = self.zbox.m("pinv_slot{}".format(n))
@@ -3063,10 +3108,12 @@ class Tradebox:
 		elif itp == "weapon": sn, sv = "A:", self.items[item]["attack_value"]
 		# what it means when cat curls its tail
 		# add later
-		self.zbox.mimg(x, y, "zibox_bg-150x105", tag)
+		self.zbox.mimg(x, y, "hover_stats", tag)
+		'''
 		self.zbox.mrect(x+3, y+3, 144, 78, "#776611", tag)
 		self.zbox.mrect(x+3, y+81, 49, 21, "#774411", tag)
 		self.zbox.mrect(x+52, y+81, 95, 21, "#773311", tag)
+		'''
 		self.zbox.mtxt(x+5, y+4, inm, tag, self.ftheme[1])
 		self.zbox.mtxt(x+7, y+18, itp, tag, (self.fn[1], 9))
 		self.zbox.mtxt(x+5, y+30, ids, tag, (self.fn[0], 11), width=140)
@@ -3087,7 +3134,7 @@ class Tradebox:
 			self.cn.itemconfigure(tag, fill="black")
 		else:
 			self.cn.tag_raise(tag)
-			self.cn.itemconfigure(tag, fill="yellow")
+			self.cn.itemconfigure(tag, fill="green")
 			self.parent.after(500, lambda: self._gold_glow(True))
 	
 	
@@ -3209,7 +3256,7 @@ class Ztoolbox:
 			anchor=anchor)
 	
 
-	def mrect(self, x1, y1, w, h, fill="black", tags=None, c=None, width=0):
+	def mrect(self, x1, y1, w, h, fill="black", tags=None, c=None, width=0, *args):
 		tags = self.check_tags(tags)
 		self.cn.create_rectangle(x1, y1, x1+w, y1+h, fill=fill, tags=tags,
 			outline=c, width=width)
