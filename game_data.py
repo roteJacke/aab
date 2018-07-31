@@ -221,7 +221,7 @@ map_markers = {
 	},
 	"house": {
 		"name": "House",
-		"image": "bw-house-35x35",
+		"image": "bw-house-30x30",
 		"coords": (530, 180),
 		"condition": None,
 		#"event": "place|cabin",  # future
@@ -237,7 +237,7 @@ map_markers = {
 	},
 	"village": {
 		"name": "Village",
-		"image": "bw-village-50x50",
+		"image": "bw-village-40x40",
 		"coords": (355, 250),
 		"condition": None,
 		#"event": "place|cabin",  # future

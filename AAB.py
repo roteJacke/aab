@@ -267,6 +267,7 @@ class AAB:
 		self._mimg(280, 370, self.characters["THE_PLAYER"]["map_image"],
 			"map_player", "center")	
 		self.cn.bind("<Button-1>", self._interact)
+		'''
 		self._mimg(2, 547, "chr_ava-50x50", "btn_Avatar")
 		self._mbtn(54, 558, "Lurco", None, w=76, h=38, font=(self.fn[0], 14), txty_change=5)
 		self._mbtn(54+(1*79), 558, "Perks", None, w=76, h=38, font=(self.fn[0], 14), txty_change=5)
@@ -275,11 +276,22 @@ class AAB:
 		self.cn.tag_bind(self._m("btn_Lurco"), "<Button-1>", lambda _=1: self.start_player_inv())
 		self.cn.tag_bind(self._m("btn_Perks"), "<Button-1>", lambda _=1: self.start_perks())
 		self._mbtn(54+(3*79), 558, "Map", None, w=76, h=38, font=(self.fn[0], 14), txty_change=5)
+		'''
 		#self._mbtn(60, 545, "Inventory", None)
-		self.cn.tag_bind(self._m("btn_Avatar"), "<Button-1>",
-			lambda _=1: self.start_dialog("A00"))
+		#self.cn.tag_bind(self._m("btn_Avatar"), "<Button-1>",
+		#	lambda _=1: self.start_dialog("A00"))
 		#self.cn.tag_bind(self._m("map_player"), "<Button-1>",
-		#	lambda _=1: self.start_player_inv())	
+		#	lambda _=1: self.start_player_inv())
+		#self._mimg(5, 5, "bw-i_coin", ("menu_icons"))
+		bilist = ["bpack", "scroll", "book", "settings"]
+		for i in range(len(bilist)):
+			n = (i+1)*-1
+			img = "bw-i_{}".format(bilist[n])
+			x, y = 755+(i*-45), 5
+			self._mimg(x, y, img, ("mi_"+bilist[n], "menu_icons"))
+		self.cn.tag_bind(self._m("mi_book"), "<Button-1>", self.start_quest)
+		self.cn.tag_bind(self._m("mi_bpack"), "<Button-1>", lambda _=1: self.start_player_inv())
+		self.cn.tag_bind(self._m("mi_scroll"), "<Button-1>", lambda _=1: self.start_perks())
 		
 	
 	def load_fonts(self, *args):
@@ -384,7 +396,7 @@ class AAB:
 			else:
 				self.cn.itemconfigure(tn, image=self.rsc[image])
 		h = int(image[-2:])  # height 99px max
-		add = ((h / 2) + 10) * -1
+		add = ((h / 2) + 8) * -1
 		self._mimg(x, y, image, ("map_obj", tag, tag+"_image"), "center")
 		self._mtxt(x+x_add, y-add, place_name, ("map_obj", tag, tag+"_txt"),
 			anchor="center", font=(self.fn[0], self.fs[1]), fill="#441122")
@@ -398,11 +410,13 @@ class AAB:
 		for i in range(len(a)):
 			tag = self._m("btn_{}".format(a[i]))
 			self.cn.tag_raise(tag)
-	
+		self.cn.tag_raise(self._m("menu_icons"))
+		
 	
 	def start_battle(self, enemy, paths=None, player="THE_PLAYER", *args):
 		def end_fight(paths, *args):
 			self._uistatus("inaktiv")
+			self.cn.move(self._m("menu_icons"), 0, 75)
 			#self.disable_cm(0)
 			#self.in_battle = False
 			# paths: 3 functions for win, defeat, flee. respectively. 0, 1, 2
@@ -447,6 +461,7 @@ class AAB:
 		self._uistatus("aktiv")
 		#self.disable_cm()
 		self.cn.delete("caUI")
+		self.cn.move(self._m("menu_icons"), 0, -75)
 		#self.in_battle = True
 	
 	
@@ -484,6 +499,7 @@ class AAB:
 		def end_perkbox(*args):
 			self.aktiv_caUI = False
 			self._uistatus("inaktiv")
+			self.cn.move(self._m("menu_icons"), 0, 75)
 			lv_()
 			if extract is not None:
 				extract()
@@ -512,6 +528,7 @@ class AAB:
 			self._uistatus("aktiv")
 			self.cn.delete("caUI")
 			self.aktiv_caUI = True
+			self.cn.move(self._m("menu_icons"), 0, -75)
 			self.go_perks = game_ui.Perks(self, self.characters[party1], end_perkbox, perksg1)
 	
 	
@@ -539,6 +556,7 @@ class AAB:
 		def end_player_inv():
 			self.aktiv_caUI = False
 			self._uistatus("inaktiv")
+			self.cn.move(self._m("menu_icons"), 0, 75)
 			self.characters["THE_PLAYER"] = self.go_inv.p1data
 			lv_()
 			if extract is not None:
@@ -548,6 +566,7 @@ class AAB:
 			try: self.go_place.aktiv_ui = True
 			except: pass
 			self._uistatus("aktiv")
+			self.cn.move(self._m("menu_icons"), 0, -75)
 			self.go_inv = game_ui.Inventory(self, end_player_inv)
 			
 	
@@ -555,6 +574,7 @@ class AAB:
 		def end_quest():
 			self._uistatus("inaktiv")
 			self._caUIstatus("inaktiv")
+			self.cn.move(self._m("menu_icons"), 0, 75)
 			#lv_()
 			#if extract is not None:
 			#	extract()
@@ -562,6 +582,7 @@ class AAB:
 		#except: pass
 		self._uistatus("aktiv")
 		self.aktiv_caUI = True
+		self.cn.move(self._m("menu_icons"), 0, -75)
 		#self.check_quests()
 		self.go_quest = game_ui.Quests(self, end_quest)
 	
@@ -570,12 +591,14 @@ class AAB:
 		def end_store(*args):
 			#self.disable_cm(0)
 			self.cn.delete(self._m("str_bg"))
+			self.cn.move(self._m("menu_icons"), 0, 75)
 			self.characters["THE_PLAYER"] = self.go_store.pdata
 			if extract is not None:
 				extract()
 		if not self.aktiv_caUI:
 			#self.disable_cm()
 			#self.check_quests()
+			self.cn.move(self._m("menu_icons"), 0, -75)
 			if bg is not None: self._mimg(0, 0, bg, "str_bg")
 			self.go_store = game_ui.Stores(self, merchant, end_store)
 	
@@ -584,6 +607,7 @@ class AAB:
 		def end_tradebox(*args):
 			#self.disable_cm(0)
 			self.cn.delete(self._m("trd_bg"))
+			self.cn.move(self._m("menu_icons"), 0, 75)
 			self.characters["THE_PLAYER"] = self.go_tradebox.pdata
 			self.containers[container] = self.go_tradebox.cdata
 			if extract is not None:
@@ -591,6 +615,7 @@ class AAB:
 		if not self.aktiv_caUI:
 			#self.disable_cm()
 			#self.check_quests()
+			self.cn.move(self._m("menu_icons"), 0, -75)
 			if bg is not None: self._mimg(0, 0, bg, "trd_bg")
 			self.go_tradebox = game_ui.Tradebox(self, container, end_tradebox)
 	
