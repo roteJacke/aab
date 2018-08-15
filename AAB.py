@@ -7,7 +7,7 @@ import os
 import random as rd
 import tkinter as tk
 #import winsound as ws
-
+from pathlib import Path
 
 
 class AAB:
@@ -353,18 +353,15 @@ class AAB:
 	
 	
 	def load_resources(self, *args):
-		floc = "resources\\"  # file location of the Gif images
-		fdata = os.listdir(floc)  # get all files in the directory
-		# separate GIFs from the rest and gives the filename location
-		glist = [data[:-4] for data in fdata if data[-4:] == ".gif"]  # Gif
-		llist = [floc + data for data in fdata if data[-4:] == ".gif"]  # path
+		floc = Path("resources")  # file location of the images
+		gif_list = list(floc.glob("*.gif")) # find GIFs
+		png_list = list(floc.glob("*.png")) # find PNGs
+		img_list = gif_list + png_list
+		img_name = [img.stem for img in img_list] # find the file names without extensions
+		
 		self.rsc = {}
-		for gif in range(len(glist)):
-			self.rsc[glist[gif]] = tk.PhotoImage(file = llist[gif])
-		glist2 = [data[:-4] for data in fdata if data[-4:] == ".png"]  # Gif
-		llist2 = [floc + data for data in fdata if data[-4:] == ".png"]  # path	
-		for gif2 in range(len(glist2)):
-			self.rsc[glist2[gif2]] = tk.PhotoImage(file = llist2[gif2])
+		for index, img in enumerate(img_name):
+			self.rsc[img] = tk.PhotoImage(file=img_list[index])
 			
 	
 	def load_variables(self, *args):
