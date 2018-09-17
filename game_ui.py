@@ -2,7 +2,7 @@ import copy
 import math
 import random as rd
 import tkinter as tk
-#import winsound as ws
+import winsound as ws
 
 
 
@@ -104,7 +104,7 @@ class Battle:
 		self.eIMG = enemy["image"]  # battle image
 		self.eAvt = enemy["avatar"]  # battle avatar
 		
-		#ws.PlaySound('Volatile_Reaction.wav', ws.SND_FILENAME | ws.SND_ASYNC)
+		ws.PlaySound('Volatile_Reaction.wav', ws.SND_ASYNC)
 		
 		# init game stats
 		self.turn_holder = "Player"
@@ -125,8 +125,10 @@ class Battle:
 			self.cn.delete(self.pIMG, self.eIMG)
 			#create_image(90, 140, self.pIMG)  # player img
 			#create_image(560, 140, self.eIMG)  # enemy img
-			create_image(115, 140, self.pIMG)  # player img
-			create_image(535, 140, self.eIMG)  # enemy img
+			#create_image(115, 140, self.pIMG)  # player img
+			#create_image(535, 140, self.eIMG)  # enemy img
+			create_image(140, 140, self.pIMG)  # player img
+			create_image(530, 140, self.eIMG)  # enemy img
 		
 		
 		def create_image(x, y, rsc, tagn=None, tagOverride=None, anchor=tk.NW):
@@ -176,8 +178,10 @@ class Battle:
 		create_image(510, 410, "aCd1", "bEdl1")  # moved position
 		#create_image(90, 140, self.pIMG)  # player img
 		#create_image(560, 140, self.eIMG)  # enemy img
-		create_image(115, 140, self.pIMG)  # player img
-		create_image(535, 140, self.eIMG)  # enemy img
+		#create_image(115, 140, self.pIMG)  # player img
+		create_image(140, 140, self.pIMG)  # player img
+		#create_image(535, 140, self.eIMG)  # enemy img
+		create_image(530, 140, self.eIMG)  # enemy img
 		create_image(40, 410, self.pAvt)  # player avatar
 		create_image(660, 410, self.eAvt)  # moved position
 		create_text(400, 73, "Round {}".format(self.round_num), "round_num", anchor="center")  # self.hcolor
@@ -254,7 +258,7 @@ class Battle:
 			Block :: failed to flee as Player.
 			Crit :: critical.
 			'''
-			x, y = 690, 250
+			x, y = 660, 250
 			if self.turn_holder == "Enemy":  # effect being applied to.
 				x, y = 75, 250
 			if self.ani_effect is not None:
@@ -270,7 +274,7 @@ class Battle:
 				if self.turn_holder == "Player":
 					x, y = 75, 250
 				if self.turn_holder == "Enemy":
-					x, y = 690, 250
+					x, y = 660, 250
 				xname = "aTonic-0"
 				xname_text = False
 			elif mode == "Block":
@@ -369,7 +373,7 @@ class Battle:
 			# changes value of self.actors, how/why? how do we avoid this
 			self.eHP[0] = self.eHP[1]  # reset enemy HP
 			self.round_num = 1
-			#ws.PlaySound(None, ws.SND_PURGE)
+			ws.PlaySound(None, ws.SND_PURGE)
 			self.extract() 
 		
 		
@@ -429,7 +433,8 @@ class Battle:
 				#self.attcking = True
 				if num > 0:
 					val = -35
-					interval = 17
+					#interval = 17
+					interval = 25
 					if num == 11:
 						x = rd.uniform(0.0, 100.0)
 						#if x < 1.5:  # 15% dodge chance
@@ -464,7 +469,8 @@ class Battle:
 				#self.attcking = True
 				if num > 0:
 					val = 35
-					interval = 17
+					#interval = 17
+					interval = 25
 					if num == 11:
 						x = rd.uniform(0.0, 100.0)
 						#if x < 2.5:  # 25% dodge chance
@@ -507,8 +513,8 @@ class Battle:
 					self.cn.itemconfigure("battle_result", text="Victory-10/10-0-50")
 					self.cn.tag_lower("battle_result")
 					block_btns()
-					self.parent.after(250, lambda: event_txt("Victory", msec=2500))
-					self.parent.after(1950, exit_battle)
+					self.parent.after(250, lambda: event_txt("Victory", msec=5000))
+					self.parent.after(2700, exit_battle)
 				else:
 					if self.pAP <= 0 or (self.pAP - self.attacks[self.pAttk]["AP cost"] < 0 and (self.pAP < 1 or self.pTonics <= 0)):
 						self.eAP = self.eAP_max
@@ -684,8 +690,183 @@ class Battle:
 		self.parent.after(250, lambda: event_txt("Fight", msec=500))
 
 
+class SaveGame:
+	def __init__(self, world, *arg, **kwarg):
+		self.world = world
+		self.cn = world.cn
+		self.rsc = world.rsc
+		self.load_variables()
+		#self.load_ui()
+		'''
+		get list of saves
+		display them like quests
+		buttons -> save, leave
+		ability to overwrite file
+		ui for save
+		adding tkinter frame, elements to canvas? listbox or same as quests?
+		load is similar
+		'''
+		
+	
+	def leave(self, *args):
+		self.cn.delete(self.mtag)
+	
+	
+	def load_ui(self, *args):
+		x, y = 100, 100
+		self.zbox.mrect(x, y, 600, 400, "white", width=3)
+		'''
+		# put credits at center
+		self.zbox.mtxt(x+25, y+15, "Credits", font=(self.fn[0], 36))
+		self.zbox.mtxt(x+35, y+90, "R. Mandap")
+		'''
+		self.zbox.mbtn(x+535, y+17, "X", self.leave, bg="white", w=50, h=35, txty_change=5)
+	
+	
+	def load_variables(self, *args):
+		self.mtag = "creditsUI"
+		self.zbox = Ztoolbox(self.world)
+		self.zbox.mtag = self.mtag
+		self.fn, self.fs = self.world.fn, self.world.fs
+		self.pdata = self.world.characters["THE_PLAYER"]
+		self.quests = self.world.quests
+		self.containers = self.world.containers
+		self.aktivql = self.world.aktivql  # current active quests
+		self.fertigql = self.world.fertigql  # current completed quests
+	
+	
+	def prepare_data(self, *args):
+		# PYTHON JSON? THERE IS A BETTER WAY, THIS IS TEDIUS. IF NONE THEN WE WILL PROCEED WITH THIS.
+		# PYTHON CSV
+		'''
+		= first separator ??, separate by line instead
+		|| first separator
+		* second separator
+		'''
+		# prepare player relayed stats
+		n = self.pdata["name"]
+		
+		# get equipped items
+		eq = ""  # NONE||NONE||NONE||NONE||NONE||NONE
+		for i in range(len(self.pdata["equipped"])):
+			if self.pdata["equipped"][i] == None or self.pdata["equipped"][i] == "":
+				eq += "NONE"
+			else:
+				eq += self.pdata["equipped"][i]
+			if i < len(self.pdata["equipped"])-1: eq += "||"
+		
+		# get inventory items
+		inv = ""  # hpot0||hpot0||hpot0||hpot0
+		for i in range(len(self.pdata["inventory"])):
+			if self.pdata["inventory"][i] == None or self.pdata["inventory"][i] == "":
+				inv += "NONE"
+			else:
+				inv += self.pdata["inventory"][i]
+			if i < len(self.pdata["inventory"])-1: inv += "||"
+		
+		c = self.pdata["coin"]
+		
+		# get player stats
+		ps = ""  #  10*10||1||15||0||10||12345||60||15||25||25||0
+		for i in range(len(self.pdata["stats"])):
+			if i == 0:
+				ps += "{}*{}".format(self.pdata["stats"][i][0], self.pdata["stats"][i][1])
+			else:
+				ps += str(self.pdata["stats"][i])
+			if i < len(self.pdata["stats"])-1: ps += "||"
+		
+		# player mods with weapons
+		mds = ""  # 10*-15*-5*25*0||0*0*-10*75*0||-25*30*-15*75*0
+		mlist = ["sword", "axe", "mace"]
+		for i in range(len(mlist)):
+			mds += "{}*{}*{}*{}*{}".format(self.pdata["mods"][mlist[i]][0], self.pdata["mods"][mlist[i]][1], self.pdata["mods"][mlist[i]][2], self.pdata["mods"][mlist[i]][3], self.pdata["mods"][mlist[i]][4])
+			if i < len(mlist)-1: mds += "||"	
+		
+		prks = ""  # dodge0*9||crit0*2
+		for i in range(len(self.pdata["perks"])):
+			prks += "{}*{}".format(self.pdata["perks"][i][0], self.pdata["perks"][i][1])
+			if i < len(self.pdata["perks"])-1: prks += "||"
+		if prks == "": prks = "[NO PERKS]"
+		
+		ava = self.pdata["avatar"]
+		pimg = self.pdata["image"]
+		pmimg = self.pdata["map_image"]
+		plimg = self.pdata["place_image"]
+		pliimg = self.pdata["place_indoor_image"]
+		plloc = "{}*{}".format(self.pdata["location_coords"][0], self.pdata["location_coords"][1])
+		
+		prepdata = "{}\n{}\n{}\n{}\n{}\n".format(n, eq, inv, c, ps)
+		prepdata += "{}\n{}\n{}\n{}\n".format(mds, prks, ava, pimg)
+		prepdata += "{}\n{}\n{}\n{}\n".format(pmimg, plimg, pliimg, plloc)
+		prepdata += "{MAIN_SEPARATOR}\n"
+		
+		# prepare container list
+		container_data = ""
+		for key, value in self.containers.items():
+			cn = self.containers[key]["coin"]
+			inv = self.containers[key]["inventory"]
+			if len(inv) == 0: inv = 0
+			else:
+				inv_data = ""
+				for i in range(len(inv)):
+					inv_data += inv[i]
+					if i < len(inv)-1: inv_data += "*"
+			container_data += "{}||{}||{}\n".format(key, cn, inv_data)
+		prepdata += container_data
+		prepdata += "{MAIN_SEPARATOR}\n"
+		
+		# prepare quest data
+		quest_data = ""
+		for i in range(len(self.aktivql)):
+			quest_data += "{}*{}".format(self.aktivql[i], self.quests[self.aktivql[i]]["stage"][0])
+			if i < len(self.aktivql)-1: quest_data += "||"
+		for i in range(len(self.fertigql)):
+			quest_data += "{}*{}".format(self.fertigql[i], self.quests[self.fertigql[i]]["stage"][0])
+			if i < len(self.fertigql)-1: quest_data += "||"
+		if quest_data == "": quest_data = "[NO QUESTS]"
+		prepdata += quest_data
+		print("*"*50)
+		print(prepdata)
+		print("*"*50)
+		'''
+		pdata = "{}={}={}={}={}".format(n, eq, inv, c, ps)
+		pdata += "={}={}={}={}={}".format(ms, ma, mm)
+		pdata += "={}={}={}={}".format()
+		'''
+		
+		
+class Credits:
+	def __init__(self, world, *arg, **kwarg):
+		self.world = world
+		self.parent = world.parent
+		self.cn = world.cn
+		self.rsc = world.rsc
+		self.load_variables()
+		self.load_ui()
+	
+	
+	def leave(self, *args):
+		self.cn.delete(self.mtag)
+	
+	
+	def load_ui(self, *args):
+		x, y = 100, 100
+		self.zbox.mrect(x, y, 600, 400, "white", width=3)
+		# put credits at center
+		self.zbox.mtxt(x+25, y+15, "Credits", font=(self.fn[0], 36))
+		self.zbox.mtxt(x+35, y+90, "R. Mandap")
+		self.zbox.mbtn(x+535, y+17, "X", self.leave, bg="white", w=50, h=35, txty_change=5)
+	
+	
+	def load_variables(self, *args):
+		self.mtag = "creditsUI"
+		self.zbox = Ztoolbox(self.world)
+		self.zbox.mtag = self.mtag
+		self.fn, self.fs = self.world.fn, self.world.fs
+	
+		
 class Dialogs:
-	def __init__(self, world, dialog, extract=None, *arg, **kwar):
+	def __init__(self, world, dialog, extract=None, *arg, **kwarg):
 		self.world = world
 		self.parent = world.parent
 		self.cn = world.cn
@@ -815,7 +996,8 @@ class Dialogs:
 			#self._special_event(id)
 			enemy = a[0]
 			paths = a[1].split("::")
-			self.world.check_event_events(after_event)
+			print(paths)
+			#self.world.check_event_events(after_event)
 			self._leave_dlg()
 			#self.go_place(self.dialogdata["location"])
 			self.world.start_battle(enemy, paths)
@@ -977,7 +1159,8 @@ class Inventory:
 		X1, Y1 = 109, 205  # starting nw coords
 		#self.mimg(X1, Y1, "bg_inv-280x306")
 		self.mrect(X1, Y1, 280, 306, fill="white", width=1)
-		self.mimg(X1+65, Y1+17, "img_player-150x200", "p1_img")
+		self.mrect(X1+65, Y1+14, 150, 200, fill="white", width=1)
+		self.mimg(X1+90, Y1+17, "img_player-150x200", "p1_img")
 		#b = ["helmet", "armor", "boots", "ring", "weapon", "trinket"]
 		b = [None, "armor", None, None, "weapon", None]
 		for i in range(2):  # 2x3 item slots
@@ -2031,7 +2214,7 @@ class Places:
 				speed = 6.19
 			if lx < px:
 				self.cn.itemconfigure(self.zbox.m("pPlyr"),
-					image=self.rsc["{}F".format(pimg)])
+					image=self.rsc["{}-f".format(pimg)])
 			else:
 				self.cn.itemconfigure(self.zbox.m("pPlyr"),
 					image=self.rsc[pimg])

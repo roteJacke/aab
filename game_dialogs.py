@@ -1,4 +1,155 @@
 dialogs = {
+	"test": {
+		"text": [ "TEST",
+			"    Test dialogs." \
+		],
+		"choices": [
+			(None, "leave|", "Leave"),
+		],
+	},
+	# Enemies
+	"mplant0": {
+		"text": [ "A Dangerous Plant",
+			"    It looks sharp."
+		],
+		"choices": [
+			(None, "battl|mplant0=mplant0-win::test::test", "Fight It"),
+			(None, "leave|", "Leave"),
+		],
+	},
+	"mplant0-win": {
+		"text": [ "A Dangerous Plant",
+			"    It looks dead. You collect its extract."
+		],
+		"reward": [125, 0, ["hpot1", "hpot1"]],
+		"choices": [
+			(None, "leave|", "Leave"),
+		],
+	},
+	# Main And Side Characters
+	"patience_cabin-0": {
+		"text": [ "Patience Before You",
+			"    Your relatively hot girlfriend. She's a redhead." \
+			" She looks ill."
+		],
+		"choices": [
+			("Qdormant|MQ00", "dialg|patience_cabin-1", "''Need Anything?''"),
+			(["Qactive|MQ00", "Ihas|hpot0"], "dialg|patience_cabin-3", "''I have it.''", ["Qcomplete|MQ00", "I-|hpot0"]),
+			(None, "leave|", "Leave"),
+		],
+	},
+	"tavern_innkeeper-0": {
+		"text": [ "The Innkeeper",
+			"    "
+		],
+		"choices": [
+			("Qstage1|MQ01", "dialg|MQ01-0", "Vengeance"),
+			(["Qstage2|MQ01", "Ihas|hpot1"], "dialg|MQ01-2", "''I have the extract.''", "Qcomplete|MQ01"),
+			(None, "leave|", "Leave"),
+		],
+	},
+	# MQ00
+	"patience_cabin-1": {
+		"text": [ "Illness In Patience",
+			"    ''I need a tonic.''"
+		],
+		"choices": [
+			(None, "dialg|patience_cabin-2", "Accept", "Qstart|MQ00"),
+			(None, "leave|", "Decline"),
+		],
+	},
+	"patience_cabin-2": {
+		"text": [ "Illness In Patience",
+			"    ''Thanks. Please Hurry. I don't feel so good.''"
+		],
+		"choices": [
+			(None, "leave|", "Leave"),
+		],
+	},
+	"patience_cabin-3": {
+		"text": [ "Illness In Patience",
+			"    Before you could hand her the tonic, bandits pour out of the woods in all directions." \
+			" You do what you can as one of them charges at you."
+		],
+		"choices": [
+			(None, "battl|bandit0=MQ00battle0::MQ00battle0::MQ00battle0", "Fight"),  # WTF ''!'' caused the ERROR
+		],
+	},
+	"MQ00battle0": {
+		"text": [ "The Battle",
+			"    You got knocked out eventually. You survived the attack."
+		],
+		"choices": [
+			(None, "dialg|MQ00battle0-end", "Vengeance", "Qstart|MQ01"),
+		],
+	},
+	"MQ00battle0-end": {
+		"text": [ "The Battle",
+			"    Vengeance!!"
+		],
+		"choices": [
+			(None, "place|cabin*332,340", "Leave"),
+		],
+	},
+	# MQ01
+	"MQ01-0": {
+		"text": [ "Gathering The Pieces",
+			"    Recovery, Basic Information."
+		],
+		"choices": [
+			(None, "dialg|MQ01-1", "Continue"),
+		],
+	},
+	"MQ01-1": {
+		"text": [ "Gathering The Pieces",
+			"    Mute Boy, Location Of Healing Item."
+		],
+		"choices": [
+			(None, "place|village*312,320", "Leave", "Qstage+|MQ01"),
+		],
+	},
+	"MQ01-2": {
+		"text": [ "Gathering The Pieces",
+			"    Cinder Extract Recovered. Mute Boy Recovering."
+		],
+		"choices": [
+			(None, "dialg|MQ01-3", "Continue", "Qstart|MQ02"),  # auto start MQ02
+		],
+	},
+	"MQ01-3": {
+		"text": [ "Gathering The Pieces",
+			"    Mute boy gives information"
+		],
+		"choices": [
+			(None, "leave|", "Leave"),
+		],
+	},
+	# MQ02
+	"MQ02-1": {
+		"text": [ "Descending The Void",
+			"Lookout near cave entrance. What do you do?"
+		],
+		"choices": [
+			(None, "battl|cave_lookout=MQ02-2::test::test", "Fight"),
+			(None, "leave|", "Leave"),
+		],
+	},
+	"MQ02-2": {
+		"text": [ "Descending The Void",
+			"The Lookout is dead."
+		],
+		"choices": [
+			(None, "place|cave_inner", "Continue", "Qstage+|MQ02"),
+		],
+	},
+	"MQ02-3": {
+		"text": [ "Descending The Void",
+			""
+		],
+		"choices": [()],
+	},
+	
+	
 	"patience_cabin-descr": {
 		"text": [ "",
 			"    Your relatively hot girlfriend. She's a redhead."
@@ -23,7 +174,7 @@ dialogs = {
 			"THANKS, attack starts"
 		],
 		"choices": [
-			(None, "battl|bandit0=patience_cabin-thanks::patience_cabin-thanks::patience_cabin-thanks", "Fight"),
+			(None, "battl|bandit0=q-The_Aftermath::q-The_Aftermath::q-The_Aftermath", "Fight"),
 		],
 	},
 	"patience_cabin-thanks": {

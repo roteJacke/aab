@@ -2,10 +2,10 @@ characters = {
 	"THE_PLAYER": {
 		"name": "Lurco",
 		"equipped": [None] * 6,  # armor, weapon
-		"inventory": ["copper_sword", "hpot0"],
-		"coin": 10000,
+		"inventory": ["copper_sword", "hpot0", "hpot0", "hpot0", "hpot0", "hpot0", "hpot0"],
+		"coin": 100,
 		"stats": [
-			[3, 10], 1, 15, 0, 1, 12345,  # HP AP Dodge, D, A, EXP
+			[70, 100], 1, 15, 0, 10, 12345,  # HP AP Dodge, D, A, EXP
 			60, 15, 25, 25, 0  # HC IA CC CD BD
 		],
 		"mods": {
@@ -15,14 +15,18 @@ characters = {
 			"mace": [-25, 30, -15, 75, 0],
 		},
 		"perks": [],
-		"avatar": "czlurco_ava-100x105",
-		"image": "player_img",
+		#"avatar": "czlurco_ava-100x105",
+		"avatar": "bw-man0-ava",
+		"image": "bw-man0",
 		"map_image": "map_lurco-35x35",
 		#"place_image": "czlurco_place",
-		"place_image": "bw-player0",
-		"place_indoor_image": "bw-player0I",
+		#"place_image": "bw-player0",
+		#"place_indoor_image": "bw-player0I",
+		"place_image": "bw-man0",
+		"place_indoor_image": "bw-man0",
 		#"place_image": "bw-woman0",
-		"location": None,
+		"location": None,  
+		"location_coords": [50, 50],  # location of player in map
 	},
 	# NPCs -------------------------------------
 	"ferrec": {  # merchant,
@@ -41,16 +45,38 @@ characters = {
 		#"default_inventory": (12, ["hpot0"] * 5),
 	},
 	# Enemies ----------------------------------
+	"cave_lookout": {
+		"name": "Lookout",
+		"inventory": [],
+		"coin": 25,
+		"stats": [
+			[17, 17], 2, 5, 1, 2, 0,
+			60, 15, 15, 25, 0
+		],
+		"avatar": "bw-man0i-ava",
+		"image": "bw-man0i-f",
+	},
 	"bandit0": {
 		"name": "Weak Bandit",
 		"inventory": [],
 		"coin": 25,
 		"stats": [
 			[17, 17], 1, 5, 1, 2, 0,
-			50, 15, 15, 25, 0
+			60, 15, 15, 25, 0
 		],
-		"avatar": "bandit_ava",
-		"image": "aBandit-01",
+		"avatar": "bw-man0i-ava",
+		"image": "bw-man0i-f",
+	},
+	"mplant0": {
+		"name": "Cinder Plant",
+		"inventory": [],
+		"coin": 0,
+		"stats": [
+			[5, 25], 2, 1, 0, 1, 100,
+			70, 15, 15, 25, 0
+		],
+		"avatar": "bw-t-fmonster0-ava",
+		"image": "bw-t-fmonster0",
 	},
 }
 containers = {
@@ -89,6 +115,14 @@ items = {
 		#"quality": ("Uncommon", "#776611"),
 		# unique variables
 		"heal_value": 7,
+	},
+	"hpot1": {
+		"name": "Cinder Extract",
+		"type": "potion",
+		"image": "invi_potion",
+		"descr": "A powerful potion of healing.",
+		"price": [127, 67],
+		"heal_value": 20,
 	},
 	# treasure ---------------------------------
 	"books": {  # make quality list later
@@ -216,6 +250,50 @@ map_markers = {
 		"image": "bw-cave-35x35",
 		"coords": (110, 200),
 		"condition": None,
+	},
+	"forest": {
+		"name": "Forest",
+		"image": "bw-forest-30x30",
+		"coords": (185, 450),
+		"condition": None,
+	},
+	"village": {
+		"name": "Village",
+		"image": "bw-village-40x40",
+		"coords": (355, 250),
+		"condition": None,
+	},
+}
+'''
+	"vhouse": {
+		"name": "?????",
+		"image": "bw-vhouse-37x37",
+		"coords": (725, 100),
+		"condition": None,
+		#"event": "place|cabin",  # future
+		#"place": "cabin", redundant as key is the parameter
+	},
+	"fhouse": {
+		"name": "?????",
+		"image": "bw-fhouse-30x30",
+		"coords": (120, 60),
+		"condition": None,
+		#"event": "place|cabin",  # future
+		#"place": "cabin", redundant as key is the parameter
+	},
+	"hillfort": {
+		"name": "?????",
+		"image": "bw-hillfort-40x40",
+		"coords": (585, 50),
+		"condition": None,
+		#"event": "place|cabin",  # future
+		#"place": "cabin", redundant as key is the parameter
+	},
+	"church": {
+		"name": "?????",
+		"image": "bw-church-35x35",
+		"coords": (720, 200),
+		"condition": None,
 		#"event": "place|cabin",  # future
 		#"place": "cabin", redundant as key is the parameter
 	},
@@ -229,32 +307,86 @@ map_markers = {
 	},
 	"camp": {
 		"name": "Camp",
-		"image": "bw-tent-35x35",
+		"image": "bw-tent-30x30",
 		"coords": (630, 300),
 		"condition": None,
 		#"event": "place|cabin",  # future
 		#"place": "cabin", redundant as key is the parameter
 	},
-	"village": {
-		"name": "Village",
-		"image": "bw-village-40x40",
-		"coords": (355, 250),
-		"condition": None,
-		#"event": "place|cabin",  # future
-		#"place": "cabin", redundant as key is the parameter
-	},
-}
+'''
 world_places = {
+	"vhouse": {
+		"name": "Camp",
+		"type": ["outdoors", "bw-bg_top2", "bw-bg_bot1"],
+		"entry_coords": (425, 417),
+		"walk_range": "default",
+		"events": [
+			(None, None, "bw-gate0|245,210"),
+			(None, "leave|", "bw-arrow_down|445,545"),
+		],
+	},
+	"fhouse": {
+		"name": "Camp",
+		"type": ["outdoors", "bw-bg_top2", "bw-bg_bot1"],
+		"entry_coords": (425, 417),
+		"walk_range": "default",
+		"events": [
+			(None, None, "bw-gate0|245,210"),
+			(None, "leave|", "bw-arrow_down|445,545"),
+		],
+	},
+	"hillfort": {
+		"name": "Camp",
+		"type": ["outdoors", "bw-bg_top2", "bw-bg_bot1"],
+		"entry_coords": (425, 417),
+		"walk_range": "default",
+		"events": [
+			(None, None, "bw-gate0|245,210"),
+			(None, "leave|", "bw-arrow_down|445,545"),
+		],
+	},
+	"forest": {
+		"name": "Forest",
+		"type": ["outdoors", "bw-bg_top1", "bw-bg_bot1"],
+		"entry_coords": (425, 417),
+		"walk_range": "default",
+		"events": [
+			("Qstarted|MQ01", "place|forest_inner0*155,345", "bw-arrow_up|700,275"),
+			(None, "leave|", "bw-arrow_down|445,545"),
+		],
+	},
+	"forest_inner0": {
+		"name": "Forest",
+		"type": ["outdoors", "bw-bg_top1", "bw-bg_bot1"],
+		"entry_coords": (425, 417),
+		"walk_range": "default",
+		"events": [
+			#(None, "battl|mplant0=test::test::test", "bw-t-fmonster0|545,345"),
+			(None, "dialg|mplant0", "bw-t-fmonster0|590,180"),
+			(None, "place|forest", "bw-arrow_up|100,275"),
+		],
+	},
+	"church": {
+		"name": "Camp",
+		"type": ["outdoors", "bw-bg_top2", "bw-bg_bot1"],
+		"entry_coords": (425, 417),
+		"walk_range": "default",
+		"events": [
+			(None, None, "bw-gate0|245,210"),
+			(None, "leave|", "bw-arrow_down|445,545"),
+		],
+	},
+	#
 	"cabin": {
 		"name": "Cabin",
 		"type": ["outdoors", "bw-bg_top1", "bw-bg_bot1"],
 		"entry_coords": (625, 317),
 		"walk_range": "default",
 		"events": [
-			("Qdormant|main_quest0.0", None, "bw-house0|250,170"),
-			("Qdormant|main_quest0.0", "place|cabin_indoors", "bw-hdoor0|270,253"),
-			("Qstarted|main_quest0.0", None, "bw-house0-z|250,170"),
-			("Qdormant|main_quest0.0", "dialg|patience_cabin-descr", "bw-woman0|180,225"),
+			("Qdormant|MQ01", None, "bw-house0|250,170"),
+			("Qdormant|MQ01", "place|cabin_indoors", "bw-hdoor0|270,253"),
+			("Qstarted|MQ01", None, "bw-house0-z|250,170"),
+			("Qdormant|MQ01", "dialg|patience_cabin-0", "bw-woman0|180,225"),
 			(None, "leave|", "bw-arrow_up|555,270"),
 		],
 	},
@@ -264,8 +396,21 @@ world_places = {
 		"entry_coords": (675, 317),
 		"walk_range": "default",
 		"events": [
-			(None, None, "bw-cave|100,175"),
+			#(None, None, "bw-cave|100,175"),
+			("Qdormant|MQ02", None, "bw-cave|100,175"),
+			("Qstage1|MQ02", "dialg|MQ02-1", "bw-cave|100,175"),
+			("Qstage2|MQ02", "place|cave_inner", "bw-cave|100,175"),
 			(None, "leave|", "bw-arrow_up|705,270"),
+		],
+	},
+	"cave_inner": {
+		"name": "Cave",
+		"type": ["outdoors", "bw-bg_top3", "bw-bg_bot3"],
+		"entry_coords": (675, 317),
+		"walk_range": "default",
+		"events": [
+			#(None, None, "bw-cave|100,175"),
+			(None, "place|cave", "bw-arrow_up|705,270"),
 		],
 	},
 	"house": {
@@ -296,7 +441,9 @@ world_places = {
 		"events": [
 			(None, "place|village*312,320", "bw-door0f|432,157"),
 			(None, "place|village*312,320", "bw-door0|565,157"),
-			(None, "dialg|patience_cabin-descr", "bw-woman0|180,190"),
+			#(None, "dialg|MQ01-00", "bw-woman0|180,190"),
+			#("Qstage1|MQ01", "dialg|tavern_innkeeper-0", "bw-woman0|180,190"),
+			(None, "dialg|tavern_innkeeper-0", "bw-woman0|180,190"),
 			(None, None, "bw-counter|65,270"),
 			(None, None, "bw-table|80,450"),
 			(None, None, "bw-table|538,450"),
@@ -361,6 +508,55 @@ map = {
 }
 # Only one (1) requirement to adv stage unless items
 quests = {  # Quest added to fertigql if reward is given
+	# MAIN QUEST ACT 1
+	"MQ00": {
+		"name": "Woman In Illness",
+		"stage": [0, 2],
+		"stage1": [
+			"    I must go to the village and find a health potion." \
+			" I should talk to the innkeeper for more information.\n"
+		],
+		"stage2": [
+			"    I got and delivered the health portion."
+		],
+		"reward": [123, 50, ["hpot0", "hpot0"]]
+	},
+	"MQ01": {
+		"name": "Gathering The Pieces",
+		"stage":[0, 3],
+		"stage1": [
+			"    Once I am able to, I should go to the village for help." \
+			" Some of the villagers may have information about the attack." \
+			" I am too wounded to fight the bandits and I need time to rest and recover."
+		],
+		"stage2": [
+			"    The Forest near the village contains a plant that contains an extract that could heal the boy." \
+			" He could give us a significant amount of information about the bandits if he is well." \
+			" I should at least have a sword and a tonic, the innkeeper told me." \
+		],
+		"stage3": [
+			"    I had given the plant extract to the innkeeper as soon as I could." \
+			" The mute boy recovered but was still bedridden." \
+			" He made shapes out of his fingers and arms, that I could not comprehend." \
+			" Finally, the innkeeper turned towards me and uttered, ''The caves to the north west.''."
+		],
+		"reward": [1250, 10, ["iron_sword"]],
+	},
+	"MQ02": {
+		"name": "Descending The Void",
+		"stage":[0, 3],
+		"stage1": [
+			"A group of bandits are hiding in a cave to the north west. They may be the ones that have attacked the cabin."
+		],
+		"stage2": [
+			"The lookout is dead. I should go further down the cave."
+		],
+		"stage3": [
+			"The bandits are dead. I had rescued a girl, related to the mute boy. She had given me significant information."
+		],
+		"reward": [2500, 425, ["iron_sword", "iron_sword", "hpot0", "hpot0", "hpot0"]],
+	},
+	#
 	"main_quest0.0": {
 		"name": "The Aftermath",
 		"stage": [0, 3],

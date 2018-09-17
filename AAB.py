@@ -7,7 +7,7 @@ import os
 import random as rd
 import tkinter as tk
 #import winsound as ws
-from pathlib import Path
+
 
 
 class AAB:
@@ -31,8 +31,59 @@ class AAB:
 		# test functions
 		#self.check_condition("Q|mq01")
 		#self.check_event_conditions([(["Qactive|mq01", "G+|100"], "place|cabin_indoors", "bw-hdoor0|270,253")])
+		self.start_screen()
+		#self._mbtn(300, 300, "Perks", lambda: print(self.aktivql))
+		self._mbtn(10, 10, "Save Test", lambda: self.save_test())
+	
+	
+	def save_test(self, *args):
+		self.go_save = game_ui.SaveGame(self)
+		self.go_save.prepare_data()
 	
 
+	def start_screen(self, *args):
+		self._uistatus("aktiv")
+		self._mrect(0, 0, 800, 600, "white", tags="start_screen", width=5)
+		self._mtxt(400, 125, "AAA", "start_screen", (self.fn[0], 52), "center")
+		self._mbtn(300, 200+(0*47), "New", 
+			lambda _=1: self.start_screen_exit(),
+			(self.fn[0], 20), 200, 40, "white", 3)
+		self._mbtn(300, 200+(1*47), "Continue", None, (self.fn[0], 20), 200, 40, "white", 3)
+		self._mbtn(300, 200+(2*47), "Load", None, (self.fn[0], 20), 200, 40, "white", 3)
+		self._mbtn(300, 200+(3*47), "Credits", 
+			lambda _=1: self.start_credits(),
+			(self.fn[0], 20), 200, 40, "white", 3)
+		self._mbtn(300, 200+(4*47), "Exit", None, (self.fn[0], 20), 200, 40, "white", 3)
+		'''
+		btxt = ["New", "Continue", "Load", "Credits", "Exit"]
+		for i in range(len(btxt)):
+			self._mbtn(300, 200+(i*47), btxt[i], None, (self.fn[0], 20), 200, 40, "white", 3)
+		self.cn.itemconfigure(self._m("btn_New"), command=lambda _=1: map(self.cn.delete, btxt))	
+		'''
+	
+	
+	def start_screen_exit(self, stage=0, *args):
+		# disable going to location after exit
+		# we need more time, 3days, 7hours alone just to fix the start screen.
+		# 3hours for save system
+		# 3hours for bug checking
+		# 2hours left
+		# 15hours, doable within 5-7days
+		btxt = ["New", "Continue", "Load", "Credits", "Exit"]
+		btxt = [self._m("btn_"+x) for x in btxt]
+		self._delete(btxt, self._m("start_screen"))
+		self._uistatus("inaktiv")
+		'''
+		if stage == 0:
+			self._uistatus("aktiv")
+			self.parent.after(250, self.start_screen_exit(1))
+		else:
+			btxt = ["New", "Continue", "Load", "Credits", "Exit"]
+			btxt = [self._m("btn_"+x) for x in btxt]
+			self._delete(btxt, self._m("start_screen"))
+			self._uistatus("inaktiv")
+		'''
+		
 	def check_event_events(self, event_list, *args):
 		# checks for events to be executed
 		if len(event_list) < 4: return  # No events
@@ -353,15 +404,18 @@ class AAB:
 	
 	
 	def load_resources(self, *args):
-		floc = Path("resources")  # file location of the images
-		gif_list = list(floc.glob("*.gif")) # find GIFs
-		png_list = list(floc.glob("*.png")) # find PNGs
-		img_list = gif_list + png_list
-		img_name = [img.stem for img in img_list] # find the file names without extensions
-		
+		floc = "resources\\"  # file location of the Gif images
+		fdata = os.listdir(floc)  # get all files in the directory
+		# separate GIFs from the rest and gives the filename location
+		glist = [data[:-4] for data in fdata if data[-4:] == ".gif"]  # Gif
+		llist = [floc + data for data in fdata if data[-4:] == ".gif"]  # path
 		self.rsc = {}
-		for index, img in enumerate(img_name):
-			self.rsc[img] = tk.PhotoImage(file=img_list[index])
+		for gif in range(len(glist)):
+			self.rsc[glist[gif]] = tk.PhotoImage(file = llist[gif])
+		glist2 = [data[:-4] for data in fdata if data[-4:] == ".png"]  # Gif
+		llist2 = [floc + data for data in fdata if data[-4:] == ".png"]  # path	
+		for gif2 in range(len(glist2)):
+			self.rsc[glist2[gif2]] = tk.PhotoImage(file = llist2[gif2])
 			
 	
 	def load_variables(self, *args):
@@ -427,10 +481,13 @@ class AAB:
 					# temp 
 					#self.dialog[paths[0]]["rewards"][1] = self.scale_exp(self.dialog[paths[0]]["rewards"][1])
 					try: 
-						self.characters[player]["stats"][5] += self.dialogs[paths[0]]["rewards"][1]
+						self.characters[player]["stats"][5] += self.dialogs[paths[0]]["reward"][0]
 					except: pass
 					try:
-						self.characters[player]["coin"] += self.dialogs[paths[0]]["rewards"][0]
+						self.characters[player]["coin"] += self.dialogs[paths[0]]["reward"][1]
+					except: pass
+					try:
+						self.characters[player]["inventory"] += self.dialogs[paths[0]]["reward"][2]
 					except: pass
 				elif "Defeat" in self.battle_result:
 					x = rd.randint(0, 10)
@@ -460,6 +517,10 @@ class AAB:
 		self.cn.delete("caUI")
 		self.cn.move(self._m("menu_icons"), 0, -75)
 		#self.in_battle = True
+	
+	
+	def start_credits(self, *args):
+		self.go_start_credits = game_ui.Credits(self)
 	
 	
 	def start_dialog(self, dialog_id, extract=None, *args):
@@ -632,7 +693,15 @@ class AAB:
 			tags = tuple([self.mtag] + x)
 		return tags
 		
-		
+
+	def _delete(self, itemlist_to_delete=None, string_to_delete=None, *args):
+		if itemlist_to_delete != None:
+			for i in itemlist_to_delete:
+				self.cn.delete(i)
+		if string_to_delete != None:
+			self.cn.delete(string_to_delete)
+	
+	
 	def _interact(self, event, *args):
 		id_num = self.cn.find_closest(event.x, event.y)[0]
 		id_tags = self.cn.gettags(id_num)
@@ -684,7 +753,7 @@ class AAB:
 		self._mtxt(x2, y2+txty_change, text, (tag, tag+"_txt"), font=font,
 			anchor=tk.N, width=w)
 		if command is not None:
-			self.cn.tag_bind(self.m(tag), "<Button-1>", lambda _=1: command())
+			self.cn.tag_bind(self._m(tag), "<Button-1>", lambda _=1: command())
 		#ntag = self._m(tag+"_txt")
 		ntag = self._m(tag)
 		self.cn.tag_bind(ntag, "<Enter>", lambda _=1: _bhover())
@@ -713,7 +782,6 @@ class AAB:
 		tags = self._check_tags(tags)  # must be tuple
 		self.cn.create_rectangle(x1, y1, x1+w, y1+h, fill=fill, tags=tags,
 			outline=c, width=width)
-	
 		
 	def _mtxt(self, x, y, txt, tags=None, font=None, anchor=tk.NW,
 		fill="black", width=250, align="left", *args):
