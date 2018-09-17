@@ -1,7 +1,7 @@
 # aab
 python3.6 Tkinter 2d RPG similar to Mount&amp;Blade (without the battles!)
 
-It is a 2d RPG similar to Mount&Blade without the battle. The player might spend most of their time reading dialogs, like SunlessSea. The deadline of making a functional & playable game is August 14 2018. The deadline for the polishing and adding of content is October 1, 2018.
+It is a 2d RPG similar to Mount&Blade without the battle. The player might spend most of their time reading dialogs, like SunlessSea. ~~The deadline of making a functional & playable game is August 14 2018. The deadline for the polishing and adding of content is October 1, 2018.~~ October 1, while October 14 is the deadline for polishing. I have underestimated the time needed and gave an overly optimistic deadline. I/We can add content from time to time then on. Our biggest problem is adding sounds with vanilla Python 3.6, there might be no sounds in this game.
 
 To play the game, just download it from Github, and use Python3. Then just double-click AAB.py
 
