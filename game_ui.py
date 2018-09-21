@@ -1,4 +1,5 @@
 import copy
+import game_data as gd
 import math
 import random as rd
 import tkinter as tk
@@ -690,6 +691,129 @@ class Battle:
 		self.parent.after(250, lambda: event_txt("Fight", msec=500))
 
 
+class LoadGame:
+	def __init__(self, world, *arg, **kwarg):
+		self.world = world
+		self.cn = world.cn
+		self.rsc = world.rsc
+		self.load_variables()
+		#self.load_ui()
+		'''
+		get list of saves
+		display them like quests
+		buttons -> save, leave
+		ability to overwrite file
+		ui for save
+		adding tkinter frame, elements to canvas? listbox or same as quests?
+		load is similar
+		'''
+		
+	
+	def leave(self, *args):
+		self.cn.delete(self.mtag)
+	
+	
+	def load_ui(self, *args):
+		x, y = 100, 100
+		self.zbox.mrect(x, y, 600, 400, "white", width=3)
+		'''
+		# put credits at center
+		self.zbox.mtxt(x+25, y+15, "Credits", font=(self.fn[0], 36))
+		self.zbox.mtxt(x+35, y+90, "R. Mandap")
+		'''
+		self.zbox.mbtn(x+535, y+17, "X", self.leave, bg="white", w=50, h=35, txty_change=5)
+	
+	
+	def load_variables(self, *args):
+		self.mtag = "creditsUI"
+		self.zbox = Ztoolbox(self.world)
+		self.zbox.mtag = self.mtag
+		self.fn, self.fs = self.world.fn, self.world.fs
+		self.pdata = self.world.characters["THE_PLAYER"]
+		self.quests = self.world.quests
+		self.containers = self.world.containers
+		self.aktivql = self.world.aktivql  # current active quests
+		self.fertigql = self.world.fertigql  # current completed quests
+	
+	
+	def load_data(self, data, *args):
+		# RESET DATA THEN LOAD! RESET QUEST DATA
+		def flt_or_int(string):
+			if "." in string:
+				return float(string)
+			else:
+				return int(string)
+		# PYTHON JSON? THERE IS A BETTER WAY, THIS IS TEDIUS. IF NONE THEN WE WILL PROCEED WITH THIS.
+		# PYTHON CSV
+		'''
+		= first separator ??, separate by line instead
+		|| first separator
+		* second separator
+		'''
+		self.quests = gd.quests
+		self.aktivql = []
+		self.fertigql = []
+		
+		RAW_TEXT = data
+		raw_data = RAW_TEXT.split("{MAIN_SEPARATOR}")
+		pstats = raw_data[0].split("\n")
+		containers = raw_data[1].split("\n")
+		quests = raw_data[2].split("\n")
+		
+		self.pdata["name"] = pstats[0]
+		self.pdata["equipped"] = [x if x != "NONE" else None for x in pstats[1].split("||")]
+		self.pdata["inventory"] = pstats[2].split("||") if pstats[2] != "EMPTY_INV" else []
+		self.pdata["coin"] = flt_or_int(pstats[3])
+		
+		player_stats = pstats[4].split("||")
+		hp = list(map(flt_or_int, player_stats[0].split("*")))
+		self.pdata["stats"][0] = [hp[0], hp[1]]
+		for i in range(1, 11):
+			self.pdata["stats"][i] = flt_or_int(player_stats[i])
+		
+		player_mods = pstats[5].split("||")
+		self.pdata["mods"]["sword"] = list(map(flt_or_int, player_mods[0].split("*"))) 
+		self.pdata["mods"]["axe"] = list(map(flt_or_int, player_mods[1].split("*"))) 
+		self.pdata["mods"]["mace"] = list(map(flt_or_int, player_mods[2].split("*")))
+
+		player_perks = pstats[6].split("||") if pstats[6] != "[NO PERKS]" else []
+		if player_perks == []: self.pdata["perks"] = []
+		else:
+			for i in range(len(player_perks)):
+				raw_perk_data = player_perks[i].split("*")
+				perk_data = [raw_perk_data[0], flt_or_int(raw_perk_data[1])]
+				self.pdata["perks"].append(perk_data)
+		
+		self.pdata["avatar"] = pstats[7]
+		self.pdata["image"] = pstats[8]
+		self.pdata["map_image"] = pstats[9]
+		self.pdata["place_image"] = pstats[10]
+		self.pdata["place_indoor_image"] = pstats[11]
+		coords = pstats[12].split("*")
+		self.pdata["location_coords"] = [int(coords[0]), int(coords[1])]
+		
+		for i in range(len(containers)):
+			if containers[i] == "": continue  # skip blanks
+			cdata = containers[i].split("||")
+			self.containers[cdata[0]]["coin"] = flt_or_int(cdata[1]) 
+			self.containers[cdata[0]]["inventory"] = cdata[2].split("*") if cdata[2] != "0" else []
+		
+		quests = [x for x in quests if x != ""]  # remove blanks
+		quests[0] = quests[0].split("||") if quests[0] != "[NO AKTIV QUESTS]" else []
+		for i in range(len(quests[0])):
+			#if quests[0][i] == "": continue
+			qdata = quests[0][i].split("*")
+			self.quests[qdata[0]]["stage"][0] = int(qdata[1])
+			self.aktivql.append(qdata[0])
+		
+		quests[1] = quests[1].split("||") if quests[1] != "[NO COMPLETED QUESTS]" else []
+		for i in range(len(quests[1])):
+			#if quests[1][i] == "": continue
+			qdata = quests[1][i].split("*")
+			self.quests[qdata[0]]["stage"][0] = int(qdata[1])
+			self.fertigql.append(qdata[0])	
+		
+		
 class SaveGame:
 	def __init__(self, world, *arg, **kwarg):
 		self.world = world
@@ -763,6 +887,7 @@ class SaveGame:
 			else:
 				inv += self.pdata["inventory"][i]
 			if i < len(self.pdata["inventory"])-1: inv += "||"
+		if inv == "": inv = "EMPTY_INV"
 		
 		c = self.pdata["coin"]
 		
@@ -820,19 +945,23 @@ class SaveGame:
 		for i in range(len(self.aktivql)):
 			quest_data += "{}*{}".format(self.aktivql[i], self.quests[self.aktivql[i]]["stage"][0])
 			if i < len(self.aktivql)-1: quest_data += "||"
+		if quest_data == "": quest_data = "[NO AKTIV QUESTS]"
+		finquest_data = ""
 		for i in range(len(self.fertigql)):
-			quest_data += "{}*{}".format(self.fertigql[i], self.quests[self.fertigql[i]]["stage"][0])
-			if i < len(self.fertigql)-1: quest_data += "||"
-		if quest_data == "": quest_data = "[NO QUESTS]"
-		prepdata += quest_data
-		print("*"*50)
-		print(prepdata)
-		print("*"*50)
+			finquest_data += "{}*{}".format(self.fertigql[i], self.quests[self.fertigql[i]]["stage"][0])
+			if i < len(self.fertigql)-1: finquest_data += "||"
+		if finquest_data == "": finquest_data = "[NO COMPLETED QUESTS]"
+		prepdata += quest_data + "\n"
+		prepdata += finquest_data
+		#print("*"*50)
+		#print(prepdata)
+		#print("*"*50)
+		return prepdata
 		'''
 		pdata = "{}={}={}={}={}".format(n, eq, inv, c, ps)
 		pdata += "={}={}={}={}={}".format(ms, ma, mm)
 		pdata += "={}={}={}={}".format()
-		'''
+		'''		
 		
 		
 class Credits:
