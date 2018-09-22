@@ -102,6 +102,7 @@ class AAB:
 	def start_screen(self, *args):
 		self._uistatus("aktiv")
 		self.load_game_data()  # reset
+		self.load_map()
 		self._mrect(0, 0, 800, 600, "white", tags="start_screen", width=5)
 		self._mtxt(400, 125, "AAA", "start_screen", (self.fn[0], 52), "center")
 		self._mbtn(300, 225+(0*47), "New", 
@@ -434,7 +435,7 @@ class AAB:
 		self.map_places = {}
 		self.perks = game_data.perks
 		self.quests = game_data.quests
-		self.aktivql = ["A00"]  # current active quests
+		self.aktivql = []  # current active quests
 		self.fertigql = []  # current completed quests
 		# places
 		# quests

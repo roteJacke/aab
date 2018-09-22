@@ -587,7 +587,7 @@ quests = {  # Quest added to fertigql if reward is given
 		"name": "The Beginning",
 		"prev|next": [None, None],  # prev q need to be completed to be available
 		"prerequisites": None,
-		"stage": [1, 5],
+		"stage": [0, 5],
 		"stage1": [
 			"    You woke up once more. It had been days since the attack. You " \
 			"sit down with your back against the tree and begin to think. H" \
