@@ -14,12 +14,12 @@ It is in need of a few things to be playable and enjoyable:
 - more quests / dialogs (nothing profane or nsfw)
 - more content
 - code quality improvement
-- event display system
-- better quest system
-- menu screen
-- save system
+- ~~event display system~~
+- ~~better quest system~~
+- ~~menu screen~~
+- ~~save system~~
 - code rewrite / improvement! (it was made with cowboy coding)
-- ui fix / standardization / improvement
+- ~~ui fix / standardization / improvement~~
 
 
 Screenshots:
