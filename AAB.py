@@ -32,7 +32,7 @@ class AAB:
 		# test functions
 		#self.check_condition("Q|mq01")
 		#self.check_event_conditions([(["Qactive|mq01", "G+|100"], "place|cabin_indoors", "bw-hdoor0|270,253")])
-		self.start_screen()
+		self.start_screen(mode=1)
 		#self._mbtn(300, 300, "Perks", lambda: print(self.aktivql))
 		#self._mbtn(10, 10, "Save Test", lambda: self.saveload_test())
 		#self._mbtn(10, 40, "Menuz", lambda: self.game_menu())
@@ -99,7 +99,7 @@ class AAB:
 		if  mode != 0: self.start_screen()
 			
 	
-	def start_screen(self, *args):
+	def start_screen(self, mode=0, *args):
 		self._uistatus("aktiv")
 		self.load_game_data()  # reset
 		self.load_map()
@@ -122,6 +122,12 @@ class AAB:
 			data = txtr.read()
 		self.go_load = game_ui.LoadGame(self)
 		self.go_load.load_data(data)
+		'''
+		if mode == 0:
+			tags = ["map_player", "mi_book", "mi_bpack", "mi_scroll", "mi_settings"]
+			for i in tags:
+				self.cn.tag_raise(self._m(i))
+		'''
 		
 	
 	def start_screen_exit(self, stage=0, *args):
@@ -134,6 +140,9 @@ class AAB:
 		btxt = ["New", "Continue", "Load", "Credits", "Exit"]
 		btxt = [self._m("btn_"+x) for x in btxt]
 		self._delete(btxt, self._m("start_screen"))
+		tags = ["map_player", "mi_book", "mi_bpack", "mi_scroll", "mi_settings"]
+		for i in tags:
+			self.cn.tag_raise(self._m(i))
 		self._uistatus("inaktiv")
 		'''
 		if stage == 0:

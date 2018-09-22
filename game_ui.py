@@ -737,6 +737,7 @@ class LoadGame:
 			self.load_data(data)
 			self.leave()
 			self.world.game_menu_exit()
+			self.world.start_screen_exit()
 	
 	
 	def delete_file(self, *args):
