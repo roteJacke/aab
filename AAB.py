@@ -5,8 +5,9 @@ import game_ui
 import math
 import os
 import random as rd
+import sys
 import tkinter as tk
-#import winsound as ws
+import winsound as ws
 
 
 
@@ -33,12 +34,19 @@ class AAB:
 		#self.check_event_conditions([(["Qactive|mq01", "G+|100"], "place|cabin_indoors", "bw-hdoor0|270,253")])
 		self.start_screen()
 		#self._mbtn(300, 300, "Perks", lambda: print(self.aktivql))
-		self._mbtn(10, 10, "Save Test", lambda: self.saveload_test())
-		self._mbtn(10, 40, "Perks", lambda: print(self.characters["THE_PLAYER"]["perks"]))
+		#self._mbtn(10, 10, "Save Test", lambda: self.saveload_test())
+		#self._mbtn(10, 40, "Menuz", lambda: self.game_menu())
 	
+	
+	def loadgame_ui(self, *args):
+		self.go_load = game_ui.LoadGame(self)
+		self.go_load.load_ui()
+		#ws.PlaySound("C:\\Users\\HP\\Desktop\\AAB2\\cb.wav", ws.SND_ASYNC) too loud
+		
 	
 	def saveload_test(self, *args):
 		self.go_save = game_ui.SaveGame(self)
+		'''
 		a = self.go_save.prepare_data()
 		a = a.replace("Lurco", "Montezuma")
 		self.go_load = game_ui.LoadGame(self)
@@ -46,28 +54,74 @@ class AAB:
 		print("*"*50)
 		print(a)
 		print("*"*50)
+		'''
 		
 
+	def exit_game(self, *args):
+		#root.destroy()
+		sys.exit()
+		
+
+	def game_menu(self, *args):
+		# get 800x600 transparent image
+		self._uistatus("aktiv")
+		self._mimg(0, 0, "bg-trans", "game_menu")
+		self._mrect(295, 170, 210, 220, "white",
+			tags="game_menu", width=3)
+		self._mbtn(315, 190+(0*37), "Resume", 
+			lambda _=1: self.game_menu_exit(),
+			(self.fn[0], 18), 170, 30, "white", 1)
+		self._mbtn(315, 190+(1*37), "Save", 
+			lambda _=1: self.saveload_test(),
+			(self.fn[0], 18), 170, 30, "white", 1)
+		self._mbtn(315, 190+(2*37), "Load", 
+			lambda _=1: self.loadgame_ui(),
+			(self.fn[0], 18), 170, 30, "white", 1)
+		self._mbtn(315, 190+(3*37), "Menu", 
+			lambda _=1: self.game_menu_exit(1),
+			(self.fn[0], 18), 170, 30, "white", 1)
+		self._mbtn(315, 190+(4*37), "Exit", 
+			lambda _=1: self.exit_game(),
+			(self.fn[0], 18), 170, 30, "white", 1)	
+		
+
+	def game_menu_exit(self, mode=0, *args):
+		# disable going to location after exit
+		# we need more time, 3days, 7hours alone just to fix the start screen.
+		# 3hours for save system
+		# 3hours for bug checking
+		# 2hours left
+		# 15hours, doable within 5-7days
+		btxt = ["Resume", "Save", "Load", "Menu", "Exit"]
+		btxt = [self._m("btn_"+x) for x in btxt]
+		self._delete(btxt, self._m("game_menu"))
+		self._uistatus("inaktiv")
+		if  mode != 0: self.start_screen()
+			
+	
 	def start_screen(self, *args):
 		self._uistatus("aktiv")
+		self.load_game_data()  # reset
 		self._mrect(0, 0, 800, 600, "white", tags="start_screen", width=5)
 		self._mtxt(400, 125, "AAA", "start_screen", (self.fn[0], 52), "center")
-		self._mbtn(300, 200+(0*47), "New", 
+		self._mbtn(300, 225+(0*47), "New", 
 			lambda _=1: self.start_screen_exit(),
 			(self.fn[0], 20), 200, 40, "white", 3)
-		self._mbtn(300, 200+(1*47), "Continue", None, (self.fn[0], 20), 200, 40, "white", 3)
-		self._mbtn(300, 200+(2*47), "Load", None, (self.fn[0], 20), 200, 40, "white", 3)
-		self._mbtn(300, 200+(3*47), "Credits", 
+		self._mbtn(300, 225+(1*47), "Load", 
+			lambda _=1: self.loadgame_ui(),
+			(self.fn[0], 20), 200, 40, "white", 3)
+		self._mbtn(300, 225+(2*47), "Credits", 
 			lambda _=1: self.start_credits(),
 			(self.fn[0], 20), 200, 40, "white", 3)
-		self._mbtn(300, 200+(4*47), "Exit", None, (self.fn[0], 20), 200, 40, "white", 3)
-		'''
-		btxt = ["New", "Continue", "Load", "Credits", "Exit"]
-		for i in range(len(btxt)):
-			self._mbtn(300, 200+(i*47), btxt[i], None, (self.fn[0], 20), 200, 40, "white", 3)
-		self.cn.itemconfigure(self._m("btn_New"), command=lambda _=1: map(self.cn.delete, btxt))	
-		'''
-	
+		self._mbtn(300, 225+(3*47), "Exit", 
+			lambda _=1: self.exit_game(),
+			(self.fn[0], 20), 200, 40, "white", 3)
+		filepath = "saves\\DEFAULT-STATE.savt"  # problems resetting game data with new game, this is the alternative 
+		with open(filepath, "r") as txtr:
+			data = txtr.read()
+		self.go_load = game_ui.LoadGame(self)
+		self.go_load.load_data(data)
+		
 	
 	def start_screen_exit(self, stage=0, *args):
 		# disable going to location after exit
@@ -350,6 +404,7 @@ class AAB:
 		self.cn.tag_bind(self._m("mi_book"), "<Button-1>", self.start_quest)
 		self.cn.tag_bind(self._m("mi_bpack"), "<Button-1>", lambda _=1: self.start_player_inv())
 		self.cn.tag_bind(self._m("mi_scroll"), "<Button-1>", lambda _=1: self.start_perks())
+		self.cn.tag_bind(self._m("mi_settings"), "<Button-1>", lambda _=1: self.game_menu())
 		
 	
 	def load_fonts(self, *args):
@@ -783,6 +838,9 @@ class AAB:
 			self.map_move = None
 			if evt is not None:
 				evt()
+			#coords = self.cn.coords(self._m("map_player"))
+			#px, py = coords[0], coords[1]
+			#self.characters["THE_PLAYER"]["location_coords"] = [px, py]
 	
 
 	def _mrect(self, x1, y1, w, h, fill="black", tags=None, c=None, width=0):

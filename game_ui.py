@@ -1,6 +1,8 @@
 import copy
+import datetime as dt
 import game_data as gd
 import math
+import os
 import random as rd
 import tkinter as tk
 import winsound as ws
@@ -691,41 +693,102 @@ class Battle:
 		self.parent.after(250, lambda: event_txt("Fight", msec=500))
 
 
+'''
+class GameMenu:
+	def __init__(self, world, *arg, **kwarg):
+'''		
+		
+		
 class LoadGame:
 	def __init__(self, world, *arg, **kwarg):
 		self.world = world
+		self.parent = world.parent
 		self.cn = world.cn
 		self.rsc = world.rsc
 		self.load_variables()
 		#self.load_ui()
-		'''
-		get list of saves
-		display them like quests
-		buttons -> save, leave
-		ability to overwrite file
-		ui for save
-		adding tkinter frame, elements to canvas? listbox or same as quests?
-		load is similar
-		'''
 		
 	
 	def leave(self, *args):
 		self.cn.delete(self.mtag)
 	
 	
-	def load_ui(self, *args):
-		x, y = 100, 100
-		self.zbox.mrect(x, y, 600, 400, "white", width=3)
-		'''
-		# put credits at center
-		self.zbox.mtxt(x+25, y+15, "Credits", font=(self.fn[0], 36))
-		self.zbox.mtxt(x+35, y+90, "R. Mandap")
-		'''
-		self.zbox.mbtn(x+535, y+17, "X", self.leave, bg="white", w=50, h=35, txty_change=5)
+	def reload_listbox(self, *args):
+		self.cn.itemconfigure(self.zbox.m("selected_listbox_text"), text="")
+		self.load_listbox.delete(0, tk.END)
+		
+		fdata = os.listdir("saves\\")
+		sav_list = [data[:-4] for data in fdata if data[-4:] == ".sav"]
+		for i in sav_list:
+			self.load_listbox.insert(tk.END, i)
 	
+	
+	def load_file(self, *args):
+		tag = self.zbox.m("btn_Load_txt")
+		btn_txt = self.cn.itemcget(tag, "text")
+		filename = self.cn.itemcget(self.zbox.m("selected_listbox_text"), "text")
+		if btn_txt == "Load" and filename != "":
+			self.cn.itemconfigure(tag, text="Bgn?")
+			self.parent.after(500, lambda _=1: self.cn.itemconfigure(tag, text="Load"))
+		elif btn_txt == "Bgn?":
+			filepath = "saves\\{}.sav".format(filename)
+			with open(filepath, "r") as txtr:
+				data = txtr.read()
+			self.load_data(data)
+			self.leave()
+			self.world.game_menu_exit()
+	
+	
+	def delete_file(self, *args):
+		tag = self.zbox.m("btn_Del_txt")
+		btn_txt = self.cn.itemcget(tag, "text")
+		filename = self.cn.itemcget(self.zbox.m("selected_listbox_text"), "text")
+		if btn_txt == "Del" and filename != "":
+			self.cn.itemconfigure(tag, text="[X]?")
+			self.parent.after(500, lambda _=1: self.cn.itemconfigure(tag, text="Del"))
+		elif btn_txt == "[X]?":
+			try:
+				os.remove("saves\\{}.sav".format(filename))
+				self.reload_listbox()
+			except OSError:
+				pass
+	
+	
+	def load_ui(self, *args):
+		def listbox_selected(*args):
+			try:
+				v = self.load_listbox.get(self.load_listbox.curselection())
+				tag = self.zbox.m("selected_listbox_text")
+				self.cn.itemconfigure(tag, text=v)
+			except:
+				#print("Empty List")
+				pass
+				
+		
+		x, y = 200, 100
+		self.zbox.mrect(x, y, 400, 400, "white", width=3)
+		self.zbox.mbtn(x+338, y+17, "X", self.leave, bg="white", w=50, h=35, txty_change=5)
+		
+		self.zbox.mtxt(x+11, y+13, "Load Game", font=(self.fn[0], 32))
+		self.zbox.mrect(x+13, y+68, 259, 25, "white", width=1)
+		self.zbox.mtxt(x+15, y+70, "", font=(self.fn[0], 11), tags="selected_listbox_text")
+		self.zbox.mbtn(x+345, y+68, "Del", 
+			lambda _=1: self.delete_file(),
+			bg="white", w=40, h=25, txty_change=2)
+		self.zbox.mbtn(x+279, y+68, "Load",
+			lambda _=1: self.load_file(),
+			bg="white", w=60, h=25, txty_change=2)
+		
+		self.load_listbox = tk.Listbox(self.parent, width=48, height=13, bd=1,
+			relief="solid", cursor="target", font=(self.fn[0], self.fs[0]),
+			highlightthickness=0, activestyle="none")
+		self.cn.create_window((400, 345), window=self.load_listbox, anchor="center", tags=(self.mtag))
+		self.load_listbox.bind("<<ListboxSelect>>", listbox_selected)
+		self.reload_listbox()
+		
 	
 	def load_variables(self, *args):
-		self.mtag = "creditsUI"
+		self.mtag = "loadgameUI"
 		self.zbox = Ztoolbox(self.world)
 		self.zbox.mtag = self.mtag
 		self.fn, self.fs = self.world.fn, self.world.fs
@@ -812,15 +875,18 @@ class LoadGame:
 			qdata = quests[1][i].split("*")
 			self.quests[qdata[0]]["stage"][0] = int(qdata[1])
 			self.fertigql.append(qdata[0])	
+		x, y = self.pdata["location_coords"][0], self.pdata["location_coords"][1]
+		self.cn.coords(self.world._m("map_player"), (x, y))
 		
 		
 class SaveGame:
 	def __init__(self, world, *arg, **kwarg):
 		self.world = world
+		self.parent = world.parent
 		self.cn = world.cn
 		self.rsc = world.rsc
 		self.load_variables()
-		#self.load_ui()
+		self.load_ui()
 		'''
 		get list of saves
 		display them like quests
@@ -836,15 +902,70 @@ class SaveGame:
 		self.cn.delete(self.mtag)
 	
 	
+	def reload_listbox(self, *args):
+		self.cn.itemconfigure(self.zbox.m("selected_listbox_text"), text="")
+		self.load_listbox.delete(0, tk.END)
+		
+		fdata = os.listdir("saves\\")
+		sav_list = [data[:-4] for data in fdata if data[-4:] == ".sav"]
+		for i in sav_list:
+			self.load_listbox.insert(tk.END, i)
+	
+	
+	def save_file(self, *args):
+		tag = self.zbox.m("btn_Save/Owrite_txt")
+		btn_txt = self.cn.itemcget(tag, "text")
+		filename = self.cn.itemcget(self.zbox.m("selected_listbox_text"), "text")
+		if btn_txt == "Save/Owrite" and filename != "":
+			self.cn.itemconfigure(tag, text="Bgn?")
+			self.parent.after(500, lambda _=1: self.cn.itemconfigure(tag, text="Save/Owrite"))
+		elif btn_txt == "Bgn?":
+			if " New ->  " in filename:
+				filename = filename.replace(" New ->  ", "")
+			filepath = "saves\\{}.sav".format(filename)
+			data = self.prepare_data()
+			with open(filepath, "w") as txtw:
+				txtw.write(data)
+			self.leave()
+	
+	
+	def add_save_option(self, *args):
+		time_data =  dt.datetime.now()
+		m, d, y = time_data.month, time_data.day, time_data.year
+		h, mn, s = time_data.hour, time_data.minute, time_data.second
+		nm = self.pdata["name"]
+		text = " New ->  {}_{};{};{}_{};{};{}".format(nm, m, d, y, h, mn, s)
+		self.load_listbox.insert(0, text)
+		
+	
 	def load_ui(self, *args):
-		x, y = 100, 100
-		self.zbox.mrect(x, y, 600, 400, "white", width=3)
-		'''
-		# put credits at center
-		self.zbox.mtxt(x+25, y+15, "Credits", font=(self.fn[0], 36))
-		self.zbox.mtxt(x+35, y+90, "R. Mandap")
-		'''
-		self.zbox.mbtn(x+535, y+17, "X", self.leave, bg="white", w=50, h=35, txty_change=5)
+		def listbox_selected(*args):
+			try:
+				v = self.load_listbox.get(self.load_listbox.curselection())
+				tag = self.zbox.m("selected_listbox_text")
+				self.cn.itemconfigure(tag, text=v)
+			except:
+				#print("Empty List")
+				pass
+				
+		
+		x, y = 200, 100
+		self.zbox.mrect(x, y, 400, 400, "white", width=3)
+		self.zbox.mbtn(x+338, y+17, "X", self.leave, bg="white", w=50, h=35, txty_change=5)
+		
+		self.zbox.mtxt(x+11, y+13, "Save Game", font=(self.fn[0], 32))
+		self.zbox.mrect(x+13, y+68, 259, 25, "white", width=1)
+		self.zbox.mtxt(x+15, y+70, "", font=(self.fn[0], 11), tags="selected_listbox_text")
+		self.zbox.mbtn(x+279, y+68, "Save/Owrite", 
+			lambda _=1: self.save_file(), 
+			bg="white", w=106, h=25, txty_change=2)
+		self.load_listbox = tk.Listbox(self.parent, width=48, height=13, bd=1,
+			relief="solid", cursor="target", font=(self.fn[0], self.fs[0]),
+			highlightthickness=0, activestyle="none")
+		self.cn.create_window((400, 345), window=self.load_listbox, anchor="center", tags=(self.mtag))
+		self.load_listbox.bind("<<ListboxSelect>>", listbox_selected)
+		self.reload_listbox()
+		self.add_save_option()
 	
 	
 	def load_variables(self, *args):
@@ -918,7 +1039,10 @@ class SaveGame:
 		pmimg = self.pdata["map_image"]
 		plimg = self.pdata["place_image"]
 		pliimg = self.pdata["place_indoor_image"]
-		plloc = "{}*{}".format(self.pdata["location_coords"][0], self.pdata["location_coords"][1])
+		#plloc = "{}*{}".format(self.pdata["location_coords"][0], self.pdata["location_coords"][1])
+		#x, y = self.world.characters["THE_PLAYER"]["location_coords"]
+		ploc = self.cn.coords(self.world._m("map_player"))
+		plloc = "{}*{}".format(int(ploc[0]), int(ploc[1]))
 		
 		prepdata = "{}\n{}\n{}\n{}\n{}\n".format(n, eq, inv, c, ps)
 		prepdata += "{}\n{}\n{}\n{}\n".format(mds, prks, ava, pimg)
