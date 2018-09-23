@@ -24,6 +24,10 @@ It is in need of a few things to be playable and enjoyable:
 
 Screenshots:
 ![](https://i.imgur.com/tKmWdIa.png)
+![](https://i.imgur.com/KtZFbhI.png)
 ![](https://i.imgur.com/tzhqThp.png)
+![](https://i.imgur.com/cDhSuDr.png)
 ![](https://i.imgur.com/H4Mu2s6.png)
+![](https://i.imgur.com/ogFPlUo.png)
 ![](https://i.imgur.com/Osn1WUa.png)
+![](https://i.imgur.com/awDBKYU.png)
