@@ -724,6 +724,7 @@ class LoadGame:
 	
 	
 	def load_file(self, *args):
+		# QUESTS NOT CHANGING ON LOADING, STILL EMPTY, HOW TO AVOID BUGS, DO MUST PROGRAMMERS SPEND THEIR TIME DEBUGGING?
 		tag = self.zbox.m("btn_Load_txt")
 		btn_txt = self.cn.itemcget(tag, "text")
 		filename = self.cn.itemcget(self.zbox.m("selected_listbox_text"), "text")
@@ -796,8 +797,8 @@ class LoadGame:
 		self.pdata = self.world.characters["THE_PLAYER"]
 		self.quests = self.world.quests
 		self.containers = self.world.containers
-		self.aktivql = self.world.aktivql  # current active quests
-		self.fertigql = self.world.fertigql  # current completed quests
+		#self.aktivql = self.world.aktivql  # current active quests  # CHANGE 01
+		#self.fertigql = self.world.fertigql  # current completed quests
 	
 	
 	def load_data(self, data, *args):
@@ -815,8 +816,10 @@ class LoadGame:
 		* second separator
 		'''
 		self.quests = gd.quests
-		self.aktivql = []
-		self.fertigql = []
+		self.world.aktivql = []
+		self.world.fertigql = []
+		#self.aktivql = []  # CHANGE 01
+		#self.fertigql = []
 		
 		RAW_TEXT = data
 		raw_data = RAW_TEXT.split("{MAIN_SEPARATOR}")
@@ -868,14 +871,16 @@ class LoadGame:
 			#if quests[0][i] == "": continue
 			qdata = quests[0][i].split("*")
 			self.quests[qdata[0]]["stage"][0] = int(qdata[1])
-			self.aktivql.append(qdata[0])
+			#self.aktivql.append(qdata[0])  # CHANGE 01
+			self.world.aktivql.append(qdata[0])
 		
 		quests[1] = quests[1].split("||") if quests[1] != "[NO COMPLETED QUESTS]" else []
 		for i in range(len(quests[1])):
 			#if quests[1][i] == "": continue
 			qdata = quests[1][i].split("*")
 			self.quests[qdata[0]]["stage"][0] = int(qdata[1])
-			self.fertigql.append(qdata[0])	
+			#self.fertigql.append(qdata[0]  # CHANGE 01
+			self.world.fertigql.append(qdata[0])
 		x, y = self.pdata["location_coords"][0], self.pdata["location_coords"][1]
 		self.cn.coords(self.world._m("map_player"), (x, y))
 		
